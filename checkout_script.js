@@ -1,143 +1,72 @@
+// frontend/checkout_script.js
+
+// เพิ่ม URL ของ Backend API
+const API_BASE_URL = 'http://localhost:3000/api';
+
 let map;
 let directionsService;
 let directionsRenderer;
 let orderDetails;
 
-// เพิ่มข้อมูลประเภทรถบรรทุกที่ใช้เลือกใน Modal
-const truckOptionsData = [
-    {
-        name: "รถกระบะตู้ทึบ",
-        image: "https://macxtransports.com/wp-content/uploads/2023/08/1-980x766-1.webp", // ตรวจสอบ path รูปภาพให้ถูกต้อง
-        details: "ขนาด: 2.1 x 1.6 x 1.7 เมตร | รับน้ำหนัก: 1 ตัน ราคาเริ่มต้น 1,500 บาท",
-        porter_price: 450 // ราคาคนยกของต่อคนสำหรับรถกระบะ
-    },
-    {
-        name: "รถ 4 ล้อจัมโบ้",
-        image: "https://macxtransports.com/wp-content/uploads/2023/08/2-980x766-1.webp", // ตรวจสอบ path รูปภาพให้ถูกต้อง
-        details: "ขนาด: 3.1 x 1.7 x 1.8 เมตร | รับน้ำหนัก: 2 ตัน ราคาเริ่มต้น 2,500 บาท",
-        porter_price: 550 // ราคาคนยกของต่อคนสำหรับรถ 4 ล้อจัมโบ้
-    },
-    {
-        name: "รถบรรทุก 6 ล้อ",
-        image: "https://macxtransports.com/wp-content/uploads/2023/08/3-980x766-1.webp", // ตรวจสอบ path รูปภาพให้ถูกต้อง
-        details: "ขนาด: 5.5 x 2.2 x 2.3 เมตร | รับน้ำหนัก: 7 ตัน ราคาเริ่มต้น 3,500 บาท",
-        porter_price: 650 // ราคาคนยกของต่อคนสำหรับรถบรรทุก 6 ล้อ
-    }
-];
-
-// ตัวแปรสำหรับเก็บสถานะและจำนวนของบริการเพิ่มเติม
+// จะถูกโหลดจาก Backend
+let truckOptionsData = []; 
 let additionalServices = {
-    disassemble_small: { name: "ถอดประกอบสินค้า (เล็ก)", price: 700, selected: false },
-    disassemble_large: { name: "ถอดประกอบสินค้า (ใหญ่)", price: 1500, selected: false },
-    product_protection: { name: "ป้องกันสินค้า", price: 600, selected: false },
-    bubble_wrap: { name: "บับเบิ้ลกันกระแทก", price: 700, selected: false },
-    porter_quantity: 0, // ค่าเริ่มต้นคือ 0
-    porter_price_per_person: 0
+    // ชื่อ key ตรงกับ service_key ใน DB และ id ใน HTML
+    disassemble_small: { name: "ถอดประกอบสินค้า (เล็ก)", price: 0, selected: false },
+    disassemble_large: { name: "ถอดประกอบสินค้า (ใหญ่)", price: 0, selected: false },
+    product_protection: { name: "ป้องกันสินค้า", price: 0, selected: false },
+    bubble_wrap: { name: "บับเบิ้ลกันกระแทก", price: 0, selected: false },
+    porter_quantity: 0, 
+    porter_price_per_person: 0 // จะถูกกำหนดเมื่อโหลดข้อมูลรถบรรทุก
 };
 
 // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขให้มีเครื่องหมายคอมม่า
 function formatCurrency(amount) {
+    if (typeof amount !== 'number') {
+        amount = parseFloat(amount);
+    }
+    if (isNaN(amount)) {
+        return 'N/A';
+    }
     return amount.toLocaleString('en-US');
 }
 
-// ฟังก์ชันสำหรับคำนวณราคาค่าขนส่งตามประเภทรถและระยะทาง (ปรับปรุงเป็น Single-Tier Based on Highest Tier Reached)
-function calculateTruckPriceDetails(truckType, distanceKm) {
-    let startingPrice = 0;
-    let pricePerKmRanges = [];
+// ฟังก์ชันสำหรับคำนวณราคาค่าขนส่งตามประเภทรถและระยะทาง (ปรับปรุง)
+// ฟังก์ชันนี้จะรับข้อมูล truckData ที่มี price_ranges และ starting_price อยู่แล้ว
+function calculateTruckPriceDetails(truckData, distanceKm) {
+    let startingPrice = parseFloat(truckData.starting_price);
+    const pricePerKmRanges = truckData.price_ranges; // price_ranges มาจาก truckData แล้ว
 
-    // กำหนดเรทราคาตามประเภทรถ
-    switch (truckType) {
-        case "รถกระบะตู้ทึบ":
-            startingPrice = 1500;
-            pricePerKmRanges = [
-                { max: 100, rate: 24, serviceCharge: 700 },
-                { max: 200, rate: 22 },
-                { max: 300, rate: 20 },
-                { max: 400, rate: 18 },
-                { max: 500, rate: 16 },
-                { max: 600, rate: 15 },
-                { max: 700, rate: 13 },
-                { max: 800, rate: 12 },
-                { max: 900, rate: 11 },
-                // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 11 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
-                { max: Infinity, rate: 11, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
-            ];
-            break;
-        case "รถ 4 ล้อจัมโบ้":
-            startingPrice = 2500;
-            pricePerKmRanges = [
-                { max: 100, rate: 24, serviceCharge: 700 },
-                { max: 200, rate: 23 },
-                { max: 300, rate: 22 },
-                { max: 400, rate: 20 },
-                { max: 500, rate: 18 },
-                { max: 600, rate: 17 },
-                { max: 700, rate: 15 },
-                { max: 800, rate: 14 },
-                { max: 900, rate: 13 },
-                // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 13 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
-                { max: Infinity, rate: 13, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
-            ];
-            break;
-        case "รถบรรทุก 6 ล้อ":
-            startingPrice = 3500;
-            pricePerKmRanges = [
-                { max: 100, rate: 24, serviceCharge: 700 },
-                { max: 200, rate: 25 },
-                { max: 300, rate: 23 },
-                { max: 400, rate: 22 },
-                { max: 500, rate: 20 },
-                { max: 600, rate: 19 },
-                { max: 700, rate: 17 },
-                { max: 800, rate: 17 },
-                { max: 900, rate: 17 },
-                // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 17 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
-                { max: Infinity, rate: 17, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
-            ];
-            break;
-        default:
-            return { total: 0, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: 0, calculatedBasePrice: 0 };
-    }
-
-    if (distanceKm <= 0) {
+    if (isNaN(distanceKm) || distanceKm <= 0) {
         return { total: startingPrice, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: startingPrice, calculatedBasePrice: startingPrice };
     }
 
     let tierRate = 0;
     let serviceCost = 0;
     let additionalCost = 0;
-    let currentTierMax = 0; // เพื่อเก็บค่า max ของ Tier ที่พบ
-
-    // หา Tier ที่ระยะทางตกอยู่
+    
     let foundRange = null;
     for (const range of pricePerKmRanges) {
         if (distanceKm <= range.max || range.max === Infinity) {
             foundRange = range;
-            currentTierMax = range.max;
             break;
         }
     }
 
-    // ถ้าไม่พบ Tier ที่เหมาะสม (ไม่น่าเกิดขึ้นถ้ากำหนด Infinity ไว้สุดท้าย)
     if (!foundRange) {
         return { total: 0, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: 0, calculatedBasePrice: 0 };
     }
 
-    // กำหนด rate จาก Tier ที่พบ
     tierRate = foundRange.rate;
 
-    // ตรวจสอบเงื่อนไข 900 กม. ขึ้นไป
     if (foundRange.applyToTotalKm && distanceKm >= 900) {
         tierCost = distanceKm * foundRange.rate;
-        additionalCost = distanceKm * foundRange.additionalPerKmCharge;
+        additionalCost = distanceKm * (foundRange.additionalPerKmCharge || 0);
         if (foundRange.overrideServiceCharge) {
-            serviceCost = 0; // ยกเลิก serviceCharge ถ้ามีการ override
+            serviceCost = 0;
         }
     } else {
-        // คำนวณราคาตามเรทของ Tier ที่พบ คูณด้วยระยะทางทั้งหมด
         tierCost = distanceKm * tierRate;
-
-        // คำนวณค่าบริการ 700 บาท (ถ้ามีและอยู่ในช่วง 0-100 กม.)
         const firstRange = pricePerKmRanges[0];
         if (firstRange && firstRange.serviceCharge && distanceKm > 0 && distanceKm <= 100) {
             serviceCost = firstRange.serviceCharge;
@@ -147,17 +76,17 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
     let calculatedBasePrice = tierCost + serviceCost + additionalCost;
 
     return {
-        total: calculatedBasePrice, // ผลรวมค่า tier, service, additional
-        tierCost: tierCost, // ค่าตาม rate tier
-        serviceCost: serviceCost, // ค่าบริการ 700 บาท
-        additionalCost: additionalCost, // ค่ากิโลเมตรเพิ่มเติม (สำหรับ >900km)
-        startingPrice: startingPrice, // ราคาเริ่มต้นขั้นต่ำของรถประเภทนั้นๆ
-        calculatedBasePrice: calculatedBasePrice // ราคารวมที่คำนวณได้จาก กม. (ก่อนเทียบกับ startingPrice)
+        total: calculatedBasePrice,
+        tierCost: tierCost,
+        serviceCost: serviceCost,
+        additionalCost: additionalCost,
+        startingPrice: startingPrice,
+        calculatedBasePrice: calculatedBasePrice
     };
 }
 
 
-function initCheckoutMap() {
+async function initCheckoutMap() {
     map = new google.maps.Map(document.getElementById('map-container'), {
         center: { lat: 13.7563, lng: 100.5018 },
         zoom: 12
@@ -173,7 +102,52 @@ function initCheckoutMap() {
         }
     });
 
-    loadOrderDetails();
+    // โหลดข้อมูลทั้งหมดจาก Backend ก่อนที่จะดำเนินการต่อ
+    await fetchAllDataAndLoadOrderDetails();
+}
+
+// ฟังก์ชันใหม่สำหรับโหลดข้อมูลทั้งหมดจาก Backend
+async function fetchAllDataAndLoadOrderDetails() {
+    try {
+        // 1. ดึงข้อมูลรถบรรทุก
+        const trucksResponse = await fetch(`${API_BASE_URL}/trucks`);
+        const trucksData = await trucksResponse.json();
+        if (trucksResponse.ok) {
+            truckOptionsData = trucksData.trucks.map(truck => ({
+                ...truck,
+                price_ranges: JSON.parse(truck.price_ranges_json || '[]') // แปลง JSON string กลับเป็น Array
+            }));
+            console.log("Truck data loaded from backend for checkout:", truckOptionsData);
+        } else {
+            console.error("Failed to load truck data for checkout:", trucksData.error);
+            alert("ไม่สามารถโหลดข้อมูลรถบรรทุกได้จาก Server");
+            return; // หยุดการทำงานถ้าโหลดข้อมูลรถบรรทุกไม่ได้
+        }
+
+        // 2. ดึงข้อมูลบริการเพิ่มเติม
+        const servicesResponse = await fetch(`${API_BASE_URL}/additional-services`);
+        const servicesData = await servicesResponse.json();
+        if (servicesResponse.ok) {
+            for (const key in servicesData.services) {
+                if (additionalServices.hasOwnProperty(key)) {
+                    additionalServices[key].price = parseFloat(servicesData.services[key]);
+                }
+            }
+            console.log("Additional services prices loaded from backend:", additionalServices);
+        } else {
+            console.error("Failed to load additional services prices:", servicesData.error);
+            alert("ไม่สามารถโหลดราคาบริการเพิ่มเติมได้จาก Server");
+            return; // หยุดการทำงานถ้าโหลดข้อมูลบริการไม่ได้
+        }
+
+        // 3. โหลด orderDetails จาก localStorage และอัปเดต UI
+        loadOrderDetails();
+
+    } catch (error) {
+        console.error('Error fetching all data:', error);
+        alert('ไม่สามารถเชื่อมต่อกับ Server หรือโหลดข้อมูลที่จำเป็นได้ กรุณาลองใหม่อีกครั้ง');
+        window.location.href = 'index.html'; // กลับไปหน้าแรกหากเกิดข้อผิดพลาดร้ายแรง
+    }
 }
 
 function loadOrderDetails() {
@@ -181,50 +155,45 @@ function loadOrderDetails() {
     if (orderDetailsString) {
         orderDetails = JSON.parse(orderDetailsString);
 
-        // กำหนดราคาคนยกของตามประเภทรถที่เลือกปัจจุบัน
-        const currentTruckData = truckOptionsData.find(t => t.name === orderDetails.truck.name);
-        if (currentTruckData) {
-            additionalServices.porter_price_per_person = currentTruckData.porter_price;
+        // ค้นหาข้อมูล truck ที่สมบูรณ์จาก truckOptionsData ที่เพิ่งโหลดมา
+        const currentTruckFromBackend = truckOptionsData.find(t => t.id === orderDetails.truck.id);
+        if (currentTruckFromBackend) {
+            // อัปเดต orderDetails.truck ให้เป็นข้อมูลจาก Backend เพื่อให้มี price_ranges และ starting_price ล่าสุด
+            orderDetails.truck = currentTruckFromBackend;
+            additionalServices.porter_price_per_person = parseFloat(currentTruckFromBackend.porter_price);
         } else {
-            additionalServices.porter_price_per_person = 0; // Fallback
+            console.warn("Selected truck not found in backend data. Using localStorage data.");
+            // หากไม่พบใน Backend ให้ใช้ข้อมูลจาก localStorage (ซึ่งอาจจะเก่า)
+            additionalServices.porter_price_per_person = parseFloat(orderDetails.truck.porter_price || 0); // fallback
         }
-
+        
         // อัปเดต UI ของราคาต่อคนทันทีที่โหลด
         document.getElementById('porter-price-per-person').innerText = `${formatCurrency(additionalServices.porter_price_per_person)} บาท/คน`;
 
         // ตั้งค่า porter_quantity ให้เป็น 0 และอัปเดตค่าใน input field ทันทีเมื่อโหลดหน้าใหม่เสมอ
+        // (คุณสามารถเลือกที่จะจำค่านี้จาก localStorage ได้หากต้องการ)
         additionalServices.porter_quantity = 0;
         const porterQuantityInput = document.getElementById('porter_quantity');
         if (porterQuantityInput) {
             porterQuantityInput.value = additionalServices.porter_quantity;
         }
 
-        // ตั้งค่าสถานะ checkbox ของบริการเพิ่มเติมตาม orderDetails ที่มีอยู่ใน localStorage
-        // หากไม่มีข้อมูลใน localStorage สำหรับบริการเพิ่มเติมเหล่านี้ (เช่นเพิ่งเพิ่มเข้ามา)
-        // มันจะยังคงเป็น false ซึ่งเป็นค่าเริ่มต้นที่คาดหวัง
-        // หรือถ้าต้องการเก็บสถานะ checkbox ด้วย ต้องมีการบันทึกใน localStorage ในหน้าแรกด้วย
+        // อัปเดต UI ของ checkbox บริการเพิ่มเติมด้วยราคาและสถานะที่ถูกต้อง
         // (ส่วนนี้ควรถูกปรับปรุงหากคุณต้องการให้สถานะของบริการเพิ่มเติมถูกส่งมาจากหน้าแรก)
-        if (orderDetails.additionalServices) {
-            for (const key in additionalServices) {
-                if (additionalServices.hasOwnProperty(key) && orderDetails.additionalServices[key] !== undefined) {
-                    if (typeof additionalServices[key].selected === 'boolean') { // สำหรับ checkbox
-                        additionalServices[key].selected = orderDetails.additionalServices[key];
-                        const checkbox = document.getElementById(key);
-                        if (checkbox) {
-                            checkbox.checked = orderDetails.additionalServices[key];
-                        }
-                    } else if (key === 'porter_quantity') { // สำหรับคนยกของ
-                        additionalServices.porter_quantity = orderDetails.additionalServices[key];
-                        const porterInput = document.getElementById('porter_quantity');
-                        if (porterInput) {
-                            porterInput.value = orderDetails.additionalServices[key];
-                        }
+        for (const key in additionalServices) {
+            if (additionalServices.hasOwnProperty(key) && typeof additionalServices[key].selected === 'boolean') {
+                const checkbox = document.getElementById(key);
+                if (checkbox) {
+                    checkbox.checked = false; // เริ่มต้นเป็น false ทุกครั้งที่โหลด
+                    // อัปเดตข้อความราคาใน label ของ checkbox
+                    const label = checkbox.nextElementSibling;
+                    if (label) {
+                        label.innerText = `${additionalServices[key].name} - ${formatCurrency(additionalServices[key].price)} บาท`;
                     }
                 }
             }
         }
-
-
+        
         displayOrderSummary(); // เรียกแสดงสรุปราคาครั้งแรก
         addAdditionalServicesEventListeners(); // เรียก Listener หลังจากโหลด orderDetails และกำหนดราคาคนยกของแล้ว
         populateTruckSelectionModal(); // โหลดตัวเลือกประเภทรถใน Modal
@@ -249,12 +218,12 @@ function populateTruckSelectionModal() {
         const truckCard = document.createElement('div');
         truckCard.className = 'col-md-4 mb-3'; // ใช้ Grid ของ Bootstrap
         truckCard.innerHTML = `
-            <div class="card truck-card ${orderDetails.truck.name === truck.name ? 'selected-truck-card' : ''}" data-truck-name="${truck.name}">
+            <div class="card truck-card ${orderDetails.truck.id === truck.id ? 'selected-truck-card' : ''}" data-truck-id="${truck.id}">
                 <img src="${truck.image}" class="card-img-top" alt="${truck.name}">
                 <div class="card-body">
                     <h5 class="card-title">${truck.name}</h5>
                     <p class="card-text">${truck.details}</p>
-                    <button class="btn btn-primary btn-select-truck" data-truck-name="${truck.name}">เลือก</button>
+                    <button class="btn btn-primary btn-select-truck" data-truck-id="${truck.id}">เลือก</button>
                 </div>
             </div>
         `;
@@ -264,8 +233,8 @@ function populateTruckSelectionModal() {
     // เพิ่ม Event Listener ให้กับปุ่ม "เลือก" ใน Modal
     document.querySelectorAll('.btn-select-truck').forEach(button => {
         button.addEventListener('click', (event) => {
-            const selectedTruckName = event.target.dataset.truckName;
-            const selectedTruckData = truckOptionsData.find(t => t.name === selectedTruckName);
+            const selectedTruckId = parseInt(event.target.dataset.truckId);
+            const selectedTruckData = truckOptionsData.find(t => t.id === selectedTruckId);
             if (selectedTruckData) {
                 selectTruckFromModal(selectedTruckData);
                 // ซ่อน Modal หลังจากเลือก
@@ -278,15 +247,19 @@ function populateTruckSelectionModal() {
 
 // ฟังก์ชันสำหรับอัปเดตประเภทรถที่เลือกจาก Modal
 function selectTruckFromModal(newTruckData) {
-    // อัปเดต orderDetails ด้วยข้อมูลรถใหม่
+    // อัปเดต orderDetails ด้วยข้อมูลรถใหม่ (จาก Backend)
     orderDetails.truck = {
+        id: newTruckData.id,
         name: newTruckData.name,
-        image: newTruckData.image,
         details: newTruckData.details,
+        image: newTruckData.image,
+        starting_price: newTruckData.starting_price,
+        porter_price: newTruckData.porter_price,
+        price_ranges: newTruckData.price_ranges // ใช้ price_ranges ที่ถูกต้องจาก Backend
     };
 
     // อัปเดตราคาคนยกของตามประเภทรถใหม่
-    additionalServices.porter_price_per_person = newTruckData.porter_price;
+    additionalServices.porter_price_per_person = parseFloat(newTruckData.porter_price);
 
     // รีเซ็ตจำนวนคนยกของเป็น 0 เมื่อเปลี่ยนประเภทรถ
     additionalServices.porter_quantity = 0;
@@ -355,7 +328,6 @@ function addAdditionalServicesEventListeners() {
 // ฟังก์ชันสำหรับอัปเดตสถานะของบริการเพิ่มเติมและคำนวณราคาใหม่
 function updateAdditionalServices(event) {
     const checkboxId = event.target.id;
-    // ตรวจสอบว่า checkboxId มีอยู่ใน additionalServices และเป็น checkbox จริงๆ
     if (additionalServices[checkboxId] && typeof additionalServices[checkboxId].selected === 'boolean') {
         additionalServices[checkboxId].selected = event.target.checked;
         updateSummaryPrices();
@@ -413,17 +385,10 @@ function calculateAdditionalServicesTotalAndNames() {
 // ฟังก์ชันหลักที่ใช้ในการแสดงสรุปราคา (ถูกเรียกเมื่อโหลดหน้าและเมื่อมีการเปลี่ยนแปลงบริการเพิ่มเติม)
 function displayOrderSummary() {
     if (orderDetails && orderDetails.truck) {
-        // ค้นหารูปภาพที่ถูกต้องจาก truckOptionsData โดยใช้ชื่อรถ
-        const selectedTruckDataForImage = truckOptionsData.find(t => t.name === orderDetails.truck.name);
-        if (selectedTruckDataForImage) {
-            document.getElementById('selected-truck-image').src = selectedTruckDataForImage.image;
-        } else {
-            // Fallback กรณีไม่พบรูปภาพ (เช่น หากชื่อรถไม่ตรงกับ truckOptionsData)
-            document.getElementById('selected-truck-image').src = 'assets/360truck/images/truckicon/default.png';
-        }
-
+        // ใช้ orderDetails.truck.image โดยตรง
+        document.getElementById('selected-truck-image').src = orderDetails.truck.image;
         document.getElementById('selected-truck-title').innerText = orderDetails.truck.name;
-        document.getElementById('selected-truck-details').innerText = orderDetails.truck.details || `ขนาด: ${orderDetails.truck.size}`;
+        document.getElementById('selected-truck-details').innerText = orderDetails.truck.details;
 
         const distanceKm = parseFloat(orderDetails.distance);
         document.getElementById('total-distance').innerText = `${distanceKm.toFixed(2)} กม.`;
@@ -435,7 +400,7 @@ function displayOrderSummary() {
         }
 
         // เรียกฟังก์ชันอัปเดตราคาหลักหลังจากโหลดข้อมูลและตั้งค่า UI เริ่มต้น
-        updateSummaryPrices(); // เรียกใช้เพื่อให้ราคาสรุปอัปเดตเมื่อโหลดหน้าครั้งแรก
+        updateSummaryPrices(); 
 
         document.getElementById('pickup-address').innerText = orderDetails.pickupAddress;
         document.getElementById('dropoff-address').innerText = orderDetails.dropoffAddress;
@@ -445,21 +410,20 @@ function displayOrderSummary() {
         }
     }
 }
-// ฟังก์ชันใหม่สำหรับคำนวณและอัปเดตราคาทั้งหมดในหน้าสรุปราคา (ปรับปรุง)
+// ฟังก์ชันใหม่สำหรับคำนวณและอัปเดตราคาทั้งหมดในหน้าสรุปราคา
 function updateSummaryPrices() {
     const distanceKm = parseFloat(orderDetails.distance);
-    const priceDetails = calculateTruckPriceDetails(orderDetails.truck.name, distanceKm);
+    // ส่ง orderDetails.truck ที่ตอนนี้มี price_ranges และ starting_price ที่ถูกต้องไป
+    const priceDetails = calculateTruckPriceDetails(orderDetails.truck, distanceKm); 
 
-    let pricePerTruckBase = priceDetails.calculatedBasePrice; // ราคารถตาม กม. ที่คำนวณได้
-    let startingPriceMinimum = priceDetails.startingPrice; // ราคาเริ่มต้นขั้นต่ำ
+    let pricePerTruckBase = priceDetails.calculatedBasePrice; 
+    let startingPriceMinimum = priceDetails.startingPrice; 
 
-    let priceToDisplayForTruck = pricePerTruckBase; // ค่าที่จะแสดงสำหรับราคารถเดี่ยว
-    let finalTruckPriceForCalculation = pricePerTruckBase; // ค่าที่ใช้ในการคำนวณราคารวม
+    let finalTruckPriceForCalculation = pricePerTruckBase; 
 
     // ตรวจสอบเงื่อนไขราคาเริ่มต้นขั้นต่ำ
     if (pricePerTruckBase < startingPriceMinimum && startingPriceMinimum > 0) {
-        priceToDisplayForTruck = startingPriceMinimum; // ถ้าคำนวณได้น้อยกว่าขั้นต่ำ ให้แสดงขั้นต่ำ
-        finalTruckPriceForCalculation = startingPriceMinimum; // และใช้ขั้นต่ำในการคำนวณ
+        finalTruckPriceForCalculation = startingPriceMinimum; 
         document.getElementById('starting-price-display').innerText = `${formatCurrency(startingPriceMinimum)} บาท`;
         document.getElementById('starting-price-row').style.display = 'flex';
     } else {
@@ -470,7 +434,7 @@ function updateSummaryPrices() {
     let totalAdditionalServicesCost = additionalServicesResult.total;
     let additionalServiceNames = additionalServicesResult.names;
 
-    // คำนวณราคารวมทั้งหมด
+    // คำนวณราคารวมทั้งหมด (ต้องคูณด้วยจำนวนรถด้วย)
     let finalPriceTotal = (finalTruckPriceForCalculation * orderDetails.quantity) + totalAdditionalServicesCost;
 
     // แสดงผลรายละเอียดราคา
@@ -546,7 +510,8 @@ function submitOrder() {
     const lineId = document.getElementById('line_id').value;
 
     const distanceKm = parseFloat(orderDetails.distance);
-    const priceDetails = calculateTruckPriceDetails(orderDetails.truck.name, distanceKm);
+    // ส่ง orderDetails.truck ที่ตอนนี้มี price_ranges และ starting_price ที่ถูกต้องไป
+    const priceDetails = calculateTruckPriceDetails(orderDetails.truck, distanceKm);
 
     let basePricePerTruckCalculated = priceDetails.calculatedBasePrice;
     let startingPriceMinimum = priceDetails.startingPrice;
@@ -561,6 +526,7 @@ function submitOrder() {
     let totalAdditionalServicesCost = additionalServicesResult.total;
     let additionalServiceNamesList = additionalServicesResult.names;
 
+    // คำนวณราคารวมทั้งหมด (ต้องคูณด้วยจำนวนรถด้วย)
     let finalPriceTotal = (finalTruckPriceForSubmission * orderDetails.quantity) + totalAdditionalServicesCost;
 
     if (!name) {
@@ -598,7 +564,8 @@ function submitOrder() {
             bookingData['รวมค่าบริการเพิ่มเติม'] = formatCurrency(totalAdditionalServicesCost) + ' บาท';
         }
 
-        fetch('https://formspree.io/f/xrbqdagb', {
+        // คุณจะต้องเปลี่ยน URL ของ Formspree เป็นของโปรเจกต์ของคุณเอง
+        fetch('https://formspree.io/f/xrbqdagb', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -608,9 +575,7 @@ function submitOrder() {
         .then(response => response.json())
         .then(data => {
             console.log('Success:', data);
-
             displayBookingSlip(bookingData);
-
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -627,10 +592,8 @@ function displayBookingSlip(bookingData) {
     const bookingSlipContent = document.getElementById('bookingSlipContent');
     const lineOaButton = document.getElementById('lineOaButton');
 
-    // แยกราคาสุทธิออกมาก่อน
     const finalPriceTotal = bookingData['ราคาสุทธิรวมทั้งหมด'];
-    // ลบออกจาก bookingData ชั่วคราวเพื่อไม่ให้ถูกวนลูปในตอนแรก
-    delete bookingData['ราคาสุทธิรวมทั้งหมด'];
+    delete bookingData['ราคาสุทธิรวมทั้งหมด']; // ลบออกจาก bookingData ชั่วคราว
 
     let htmlContent = `
         <style>
@@ -677,7 +640,7 @@ function displayBookingSlip(bookingData) {
                 padding-top: 10px;
                 display: flex;
                 justify-content: space-between;
-                color: #007bff; /* สีน้ำเงินเพื่อให้เด่นขึ้น */
+                color: #007bff;
             }
             .slip-note {
                 font-size: 12px;
@@ -718,11 +681,9 @@ function displayBookingSlip(bookingData) {
             </div>
     `;
 
-    // วนลูปเพื่อแสดงข้อมูลอื่นๆ ยกเว้นราคาสุทธิ
     for (const key in bookingData) {
         if (bookingData.hasOwnProperty(key)) {
-            // ไม่แสดงข้อมูลพิกัดในสลิป
-            if (!key.includes('พิกัด') && key !== 'ราคาสุทธิรวมทั้งหมด') { // ตรวจสอบอีกครั้งเพื่อความแน่ใจ
+            if (!key.includes('พิกัด') && key !== 'ราคาสุทธิรวมทั้งหมด') { 
                 htmlContent += `
                     <div class="slip-item">
                         <strong>${key}:</strong>
@@ -733,7 +694,6 @@ function displayBookingSlip(bookingData) {
         }
     }
 
-    // เพิ่มราคาสุทธิไว้ด้านล่างสุดโดยใช้ class slip-total
     htmlContent += `
             <div class="slip-total">
                 <strong>ราคาสุทธิรวมทั้งหมด:</strong>
@@ -752,7 +712,7 @@ function displayBookingSlip(bookingData) {
 
     bookingSlipContent.innerHTML = htmlContent;
 
-    lineOaButton.href = `https://line.me/R/ti/p/@390ltgch?oat_content=qr`; // อย่าลืมเปลี่ยน YOUR_LINE_OA_ID_HERE เป็น Line OA ID ของคุณ
+    lineOaButton.href = `https://line.me/R/ti/p/@390ltgch?oat_content=qr`; 
 
     const bookingSuccessModal = new bootstrap.Modal(document.getElementById('bookingSuccessModal'));
     bookingSuccessModal.show();
@@ -762,7 +722,6 @@ function printBookingSlip() {
     window.print();
 }
 
-// ฟังก์ชันนี้จะถูกใช้เมื่อผู้ใช้ต้องการย้อนกลับไปหน้าแรกเท่านั้น
 function goToPreviousPage() {
     window.location.href = 'index.html';
 }
