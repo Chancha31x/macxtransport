@@ -1,13 +1,26 @@
-// frontend/script.js
-
-// เพิ่ม URL ของ Backend API
-const API_BASE_URL = 'http://localhost:3000/api';
-
 let map;
 let directionsService;
 let directionsRenderer;
-// เปลี่ยนจาก Hardcode เป็นตัวแปรที่จะเก็บข้อมูลที่ดึงมาจาก Backend
-let allTruckData = []; 
+let allTruckData = [
+    {
+        type: "กระบะ",
+        name: "รถกระบะตู้ทึบ",
+        details: "รับน้ำหนัก 1.00 ตัน | ราคาเริ่มต้น 1,500 บาท",
+        image: "https://macxtransports.com/wp-content/uploads/2023/08/1-980x766-1.webp"
+    },
+    {
+        type: "4ล้อจัมโบ้",
+        name: "รถ 4 ล้อจัมโบ้",
+        details: "รับน้ำหนัก 3.00 ตัน | ราคาเริ่มต้น 2,500 บาท",
+        image: "https://macxtransports.com/wp-content/uploads/2023/08/2-980x766-1.webp"
+    },
+    {
+        type: "6ล้อ",
+        name: "รถบรรทุก 6 ล้อ",
+        details: "รับน้ำหนัก 4.50 ตัน | ราคาเริ่มต้น 3,500 บาท",
+        image: "https://macxtransports.com/wp-content/uploads/2023/08/3-980x766-1.webp"
+    },
+];
 let selectedTruck = null;
 let selectedQuantity = 1;
 let pickupMap;
@@ -19,53 +32,107 @@ let dropoffLatLng;
 
 // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขให้มีเครื่องหมายคอมม่า
 function formatCurrency(amount) {
-    if (typeof amount !== 'number') {
-        amount = parseFloat(amount);
-    }
-    if (isNaN(amount)) {
-        return 'N/A'; // หรือค่าเริ่มต้นที่คุณต้องการ
-    }
     return amount.toLocaleString('en-US');
 }
 
-// ฟังก์ชันสำหรับคำนวณราคาค่าขนส่งตามประเภทรถและระยะทาง
-// ตอนนี้จะใช้ price_ranges ที่ได้มาจากข้อมูลรถบรรทุกโดยตรง
-function calculateTruckPriceDetails(truckData, distanceKm) {
-    let startingPrice = parseFloat(truckData.starting_price);
-    // price_ranges_json จะถูกแปลงเป็น Object/Array แล้วโดย mysql2 ใน Backend
-    const pricePerKmRanges = truckData.price_ranges; 
+// ฟังก์ชันสำหรับคำนวณราคาค่าขนส่งตามประเภทรถและระยะทาง (ปรับปรุงเป็น Single-Tier Based on Highest Tier Reached)
+function calculateTruckPriceDetails(truckType, distanceKm) {
+    let startingPrice = 0;
+    let pricePerKmRanges = [];
 
-    if (isNaN(distanceKm) || distanceKm <= 0) {
+    // กำหนดเรทราคาตามประเภทรถ
+    switch (truckType) {
+        case "รถกระบะตู้ทึบ":
+            startingPrice = 1500;
+            pricePerKmRanges = [
+                { max: 100, rate: 24, serviceCharge: 700 },
+                { max: 200, rate: 22 },
+                { max: 300, rate: 20 },
+                { max: 400, rate: 18 },
+                { max: 500, rate: 16 },
+                { max: 600, rate: 15 },
+                { max: 700, rate: 13 },
+                { max: 800, rate: 12 },
+                { max: 900, rate: 11 },
+                // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 11 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
+                { max: Infinity, rate: 11, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
+            ];
+            break;
+        case "รถ 4 ล้อจัมโบ้":
+            startingPrice = 2500;
+            pricePerKmRanges = [
+                { max: 100, rate: 24, serviceCharge: 700 },
+                { max: 200, rate: 23 },
+                { max: 300, rate: 22 },
+                { max: 400, rate: 20 },
+                { max: 500, rate: 18 },
+                { max: 600, rate: 17 },
+                { max: 700, rate: 15 },
+                { max: 800, rate: 14 },
+                { max: 900, rate: 13 },
+                // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 13 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
+                { max: Infinity, rate: 13, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
+            ];
+            break;
+        case "รถบรรทุก 6 ล้อ":
+            startingPrice = 3500;
+            pricePerKmRanges = [
+                { max: 100, rate: 24, serviceCharge: 700 },
+                { max: 200, rate: 25 },
+                { max: 300, rate: 23 },
+                { max: 400, rate: 22 },
+                { max: 500, rate: 20 },
+                { max: 600, rate: 19 },
+                { max: 700, rate: 17 },
+                { max: 800, rate: 17 },
+                { max: 900, rate: 17 },
+                // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 17 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
+                { max: Infinity, rate: 17, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
+            ];
+            break;
+        default:
+            return { total: 0, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: 0, calculatedBasePrice: 0 };
+    }
+
+    if (distanceKm <= 0) {
         return { total: startingPrice, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: startingPrice, calculatedBasePrice: startingPrice };
     }
 
     let tierRate = 0;
     let serviceCost = 0;
     let additionalCost = 0;
-    
+    let currentTierMax = 0; // เพื่อเก็บค่า max ของ Tier ที่พบ
+
+    // หา Tier ที่ระยะทางตกอยู่
     let foundRange = null;
     for (const range of pricePerKmRanges) {
         if (distanceKm <= range.max || range.max === Infinity) {
             foundRange = range;
+            currentTierMax = range.max;
             break;
         }
     }
 
+    // ถ้าไม่พบ Tier ที่เหมาะสม (ไม่น่าเกิดขึ้นถ้ากำหนด Infinity ไว้สุดท้าย)
     if (!foundRange) {
-        // หากไม่พบช่วงที่เหมาะสม (ไม่น่าเกิดขึ้นถ้ามี Infinity ในช่วงสุดท้าย)
         return { total: 0, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: 0, calculatedBasePrice: 0 };
     }
 
+    // กำหนด rate จาก Tier ที่พบ
     tierRate = foundRange.rate;
 
-    if (foundRange.applyToTotalKm && distanceKm >= 900) { // เงื่อนไข 900 กม. ขึ้นไป
+    // ตรวจสอบเงื่อนไข 900 กม. ขึ้นไป
+    if (foundRange.applyToTotalKm && distanceKm >= 900) {
         tierCost = distanceKm * foundRange.rate;
-        additionalCost = distanceKm * (foundRange.additionalPerKmCharge || 0); // ใช้ 0 ถ้าไม่มีค่า
+        additionalCost = distanceKm * foundRange.additionalPerKmCharge;
         if (foundRange.overrideServiceCharge) {
-            serviceCost = 0;
+            serviceCost = 0; // ยกเลิก serviceCharge ถ้ามีการ override
         }
     } else {
+        // คำนวณราคาตามเรทของ Tier ที่พบ คูณด้วยระยะทางทั้งหมด
         tierCost = distanceKm * tierRate;
+
+        // คำนวณค่าบริการ 700 บาท (ถ้ามีและอยู่ในช่วง 0-100 กม.)
         const firstRange = pricePerKmRanges[0];
         if (firstRange && firstRange.serviceCharge && distanceKm > 0 && distanceKm <= 100) {
             serviceCost = firstRange.serviceCharge;
@@ -75,17 +142,17 @@ function calculateTruckPriceDetails(truckData, distanceKm) {
     let calculatedBasePrice = tierCost + serviceCost + additionalCost;
 
     return {
-        total: calculatedBasePrice,
-        tierCost: tierCost,
-        serviceCost: serviceCost,
-        additionalCost: additionalCost,
-        startingPrice: startingPrice,
-        calculatedBasePrice: calculatedBasePrice
+        total: calculatedBasePrice, // ผลรวมค่า tier, service, additional
+        tierCost: tierCost, // ค่าตาม rate tier
+        serviceCost: serviceCost, // ค่าบริการ 700 บาท
+        additionalCost: additionalCost, // ค่ากิโลเมตรเพิ่มเติม (สำหรับ >900km)
+        startingPrice: startingPrice, // ราคาเริ่มต้นขั้นต่ำของรถประเภทนั้นๆ
+        calculatedBasePrice: calculatedBasePrice // ราคารวมที่คำนวณได้จาก กม. (ก่อนเทียบกับ startingPrice)
     };
 }
 
 
-async function initMap() {
+function initMap() {
     map = new google.maps.Map(document.getElementById('map-container'), {
         center: { lat: 13.7563, lng: 100.5018 },
         zoom: 10
@@ -122,9 +189,6 @@ async function initMap() {
         zoomControl: true
     });
 
-    // โหลดข้อมูลรถบรรทุกจาก Backend ก่อน
-    await fetchTruckData();
-
     // Event listener for truck type buttons
     const truckTypeButtons = document.querySelectorAll('.truck-type-button');
     truckTypeButtons.forEach(button => {
@@ -136,7 +200,7 @@ async function initMap() {
         });
     });
 
-    // Display initial truck options (หลังจากโหลดข้อมูลแล้ว)
+    // Display initial truck options
     filterTruckOptions('all');
 
     // Initial state of quantity selection
@@ -146,29 +210,6 @@ async function initMap() {
     }
 }
 
-// ฟังก์ชันใหม่สำหรับดึงข้อมูลรถบรรทุกจาก Backend
-async function fetchTruckData() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/trucks`);
-        const data = await response.json();
-        if (response.ok) {
-            // แปลง price_ranges_json string เป็น JavaScript Object/Array
-            allTruckData = data.trucks.map(truck => ({
-                ...truck,
-                price_ranges: JSON.parse(truck.price_ranges_json) // แปลง JSON string กลับเป็น Array
-            }));
-            console.log("Truck data loaded from backend:", allTruckData);
-        } else {
-            console.error("Failed to fetch truck data:", data.error);
-            alert("ไม่สามารถโหลดข้อมูลรถบรรทุกได้จาก Server");
-        }
-    } catch (error) {
-        console.error("Error fetching truck data:", error);
-        alert("ไม่สามารถเชื่อมต่อกับ Backend Server เพื่อโหลดข้อมูลรถบรรทุกได้");
-    }
-}
-
-
 function filterTruckOptions(type) {
     const truckOptionsDiv = document.getElementById('truck-options');
     truckOptionsDiv.innerHTML = ''; // Clear previous options
@@ -176,12 +217,9 @@ function filterTruckOptions(type) {
     if (type === 'all') {
         filteredTrucks = allTruckData;
     } else {
-        filteredTrucks = allTruckData.filter(truck => truck.type === type);
-    }
-
-    if (filteredTrucks.length === 0) {
-        truckOptionsDiv.innerHTML = '<p class="text-muted text-center mt-3">ไม่พบข้อมูลรถบรรทุกสำหรับประเภทนี้</p>';
-        return;
+        filteredTrucks = allTruckData.filter(truck => {
+            return truck.type === type;
+        });
     }
 
     filteredTrucks.forEach(truck => {
@@ -195,12 +233,9 @@ function filterTruckOptions(type) {
                 <div class="col-md-10 col-8">
                     <h6>${truck.name}</h6>
                     <small class="truck-info">${truck.details}</small>
-                    <small class="truck-starting-price" style="font-size: 0.75em !important; color: #6c757d !important; line-height: 1.4;">
-                        ราคาเริ่มต้น ${formatCurrency(parseFloat(truck.starting_price))} บาท
-                    </small>
                 </div>
             </div>
-        `; // <<< MODIFICATION HERE
+        `;
         card.addEventListener('click', () => selectTruck(truck));
         truckOptionsDiv.appendChild(card);
     });
@@ -219,10 +254,7 @@ function filterTruckOptions(type) {
 
 function selectTruck(truck) {
     document.querySelectorAll('.truck-option-card.selected').forEach(card => card.classList.remove('selected'));
-    // ค้นหา card ที่มี `data-id` หรือ `data-name` ตรงกับ truck.name ที่เลือก
-    const card = Array.from(document.getElementById('truck-options').children).find(
-        child => child.querySelector('h6')?.innerText === truck.name
-    );
+    const card = Array.from(document.getElementById('truck-options').children).find(child => child.querySelector('h6').innerText === truck.name);
     if (card) {
         card.classList.add('selected');
     }
@@ -288,9 +320,10 @@ function recalculatePriceOnQuantityChange() {
     }
 
     if (selectedTruck && distanceKm > 0) {
-        const priceDetails = calculateTruckPriceDetails(selectedTruck, distanceKm); // ส่ง selectedTruck object ไปเลย
+        const priceDetails = calculateTruckPriceDetails(selectedTruck.name, distanceKm);
         let finalPriceForDisplay = priceDetails.calculatedBasePrice;
 
+        // ถ้า calculatedBasePrice น้อยกว่า startingPrice และ startingPrice > 0 ให้ใช้ startingPrice
         if (priceDetails.calculatedBasePrice < priceDetails.startingPrice && priceDetails.startingPrice > 0) {
             finalPriceForDisplay = priceDetails.startingPrice;
         }
@@ -345,7 +378,7 @@ function calculateDistance() {
 
             // ดึงข้อมูลราคาเมื่อคำนวณระยะทางได้แล้ว
             if (selectedTruck) {
-                const priceDetails = calculateTruckPriceDetails(selectedTruck, parseFloat(distanceKm)); // ส่ง selectedTruck object ไปเลย
+                const priceDetails = calculateTruckPriceDetails(selectedTruck.name, parseFloat(distanceKm));
                 let finalPriceForDisplay = priceDetails.calculatedBasePrice;
 
                 // ถ้า calculatedBasePrice น้อยกว่า startingPrice และ startingPrice > 0 ให้ใช้ startingPrice
@@ -445,15 +478,14 @@ function goToCheckout() {
     }
 
     // คำนวณราคาขั้นสุดท้ายอีกครั้งเพื่อเก็บใน localStorage อย่างถูกต้อง
-    const priceDetails = calculateTruckPriceDetails(selectedTruck, distanceKm);
+    const priceDetails = calculateTruckPriceDetails(selectedTruck.name, distanceKm);
     let finalTruckPriceForStorage = priceDetails.calculatedBasePrice;
     if (priceDetails.calculatedBasePrice < priceDetails.startingPrice && priceDetails.startingPrice > 0) {
         finalTruckPriceForStorage = priceDetails.startingPrice;
     }
 
     const orderDetails = {
-        // ส่ง selectedTruck ทั้ง object ไปเลย เพื่อให้ checkout.html สามารถใช้ข้อมูล price_ranges ได้
-        truck: selectedTruck, 
+        truck: selectedTruck,
         quantity: selectedQuantity,
         pickupAddress: pickupAddress,
         dropoffAddress: dropoffAddress,
