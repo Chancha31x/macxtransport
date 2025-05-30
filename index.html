@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำนวณระยะทางและขนส่ง - MACX TRANSPORTS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* CSS สำหรับหน้าแรก (ปรับปรุงจากโค้ดเดิม) */
+        body {
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 1200px;
+            padding: 40px;
+            margin: 40px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .left-section {
+            width: 35%;
+            padding-right: 30px;
+        }
+
+        #map-container {
+            width: 60%;
+            height: 700px;
+            margin-top: 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 20px;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #34495e;
+            font-size: 0.9em;
+        }
+
+        .input-section input.form-control {
+            padding: 0.7rem;
+            font-size: 0.9rem;
+            border-radius: 0.25rem;
+            margin-bottom: 10px;
+        }
+
+        .input-section button.btn {
+            padding: 0.7rem;
+            font-size: 1rem;
+            border-radius: 0.25rem;
+        }
+
+        #distance-result {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+
+        .truck-panel {
+            margin-top: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e2e2;
+            border-radius: 5px;
+        }
+
+        .panel-hdr-truck-panel {
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e2e2e2;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+
+        .panel-hdr-truck-panel h6 {
+            font-size: 1.1em;
+            margin-bottom: 0;
+        }
+
+        .panel-container {
+            padding: 0;
+        }
+
+        .panel-content {
+            padding: 10px;
+        }
+
+        .trucktype-options .row {
+            margin-left: -5px;
+            margin-right: -5px;
+        }
+
+        .trucktype-options .col-4 {
+            padding-left: 5px;
+            padding-right: 5px;
+            margin-top: 5px;
+        }
+
+        .trucktype-options .btn {
+            margin: 0;
+            padding: 6px 8px;
+            font-size: 0.85em;
+            border-radius: 0.2rem;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .truck-option-card {
+            border: 1px solid #e2e2e2;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+            cursor: pointer;
+            transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .truck-option-card:hover {
+            transform: scale(1.01);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .truck-option-card .card-body {
+            padding: 0.75rem;
+        }
+
+        .truck-option-card .row {
+            margin-left: -0.5rem;
+            margin-right: -0.5rem;
+        }
+
+        .truck-option-card .col-md-2,
+        .truck-option-card .col-4 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .truck-option-card .col-md-10,
+        .truck-option-card .col-8 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: left;
+        }
+
+        .truck-option-card img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .truck-option-card h6 {
+            margin-bottom: 0;
+            font-size: 1em;
+            line-height: 1.2;
+        }
+
+        .truck-option-card small.truck-info {
+            font-size: 0.75em !important;
+            color: #6c757d !important;
+            line-height: 1.4;
+        }
+
+        .truck-option-card.selected {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .truck-quantity-selection {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #e2e2e2;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+            text-align: left;
+        }
+
+        .shipping-details-section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #e2e2e2;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+        }
+
+        .shipping-details-section h2 {
+            font-size: 1.4em;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            text-align: left;
+        }
+
+        .shipping-details-section label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .shipping-details-section input.form-control {
+            padding: 0.7rem;
+            font-size: 0.9rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .shipping-details-section button.btn {
+            padding: 0.7rem;
+            font-size: 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .location-input {
+            margin-bottom: 15px;
+        }
+
+        .location-map-container {
+            height: 120px;
+            width: 100%;
+            margin-top: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 0.25rem;
+        }
+   /* ... CSS อื่นๆ ... */
+
+    .truck-quantity-selection {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #e2e2e2;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        background-color: #fff;
+        text-align: left; /* ปรับให้ข้อความชิดซ้าย */
+    }
+
+    .quantity-controls {
+        display: flex; /* ใช้ Flexbox เพื่อจัดวางปุ่มและ Input ให้อยู่ในบรรทัดเดียวกัน */
+        align-items: center; /* จัดให้องค์ประกอบอยู่ตรงกลางแนวตั้ง */
+        margin-top: 10px; /* เพิ่มระยะห่างจากข้อความด้านบน */
+    }
+
+    .quantity-controls button {
+        padding: 0.5rem 0.75rem; /* ปรับขนาด Padding ของปุ่ม */
+        font-size: 0.85em; /* ปรับขนาด Font ของปุ่ม */
+        border-radius: 0.2rem; /* ปรับความโค้งของขอบปุ่ม */
+        border: 1px solid #ccc; /* เพิ่มเส้นขอบ */
+        background-color: #f8f9fa; /* สีพื้นหลังปุ่ม */
+        cursor: pointer;
+    }
+
+    .quantity-controls input#truck-quantity {
+        width: 40px; /* กำหนดความกว้างของ Input */
+        text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
+        padding: 0.5rem; /* ปรับขนาด Padding ของ Input */
+        font-size: 0.85em; /* ปรับขนาด Font ของ Input */
+        border-radius: 0.2rem; /* ปรับความโค้งของขอบ Input */
+        border: 1px solid #ccc; /* เพิ่มเส้นขอบ */
+        margin: 0 10px; /* เพิ่มระยะห่างระหว่างปุ่มและ Input */
+    }
+
+    .quantity-controls span {
+        font-size: 0.85em; /* ขนาดตัวอักษรของคำว่า "คัน" */
+        margin-left: 25px; /* ปรับระยะห่างให้มากขึ้น */
+    }
+    /* ... CSS เดิม ... */
+
+        /* Responsive สำหรับแท็บเล็ต (หน้าจอขนาด 768px ถึง 991px) */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .container {
+                flex-direction: column; /* เรียงเป็นแนวตั้ง */
+                padding: 30px;
+                margin: 20px auto;
+            }
+
+            .left-section {
+                width: 100%;
+                padding-right: 0;
+                margin-bottom: 30px;
+            }
+
+            #map-container {
+                width: 100%;
+                height: 500px;
+                position: static; /* ยกเลิก position: sticky */
+            }
+        }
+
+        /* Responsive สำหรับมือถือ (หน้าจอขนาดเล็กกว่า 768px) */
+        @media (max-width: 767px) {
+            body {
+                padding: 10px; /* เพิ่ม padding ให้ body */
+            }
+
+            .container {
+                flex-direction: column; /* เรียงเป็นแนวตั้ง */
+                padding: 20px;
+                margin: 10px auto;
+            }
+
+            .left-section {
+                width: 100%;
+                padding-right: 0;
+                margin-bottom: 20px;
+            }
+
+            #map-container {
+                width: 100%;
+                height: 300px;
+                position: static; /* ยกเลิก position: sticky */
+            }
+
+            .trucktype-options .col-4 {
+                width: 50%; /* แสดง 2 ปุ่มต่อแถว */
+            }
+
+            .truck-option-card .row {
+                flex-direction: column; /* เรียงข้อมูลรถเป็นแนวตั้ง */
+            }
+
+            .truck-option-card .col-md-2,
+            .truck-option-card .col-4 {
+                width: 100%;
+                margin-bottom: 10px;
+                display: flex;
+                justify-content: center;
+            }
+
+            .truck-option-card .col-md-10,
+            .truck-option-card .col-8 {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .truck-option-card img {
+                max-width: 50%;
+            }
+        }
+
+        /* New CSS for Admin Login link in footer */
+        .footer a {
+            color: #ffffff; /* Same color as footer text */
+            text-decoration: none; /* Remove underline */
+            margin-left: 10px; /* Space from copyright text */
+        }
+
+        .footer a:hover {
+            text-decoration: underline; /* Add underline on hover */
+        }
+</style>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVMarWpkIR4dcATATFRd-ThcIe7h0QLXk&libraries=places,maps&callback=initMap"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="left-section">
+            <h1>คำนวณระยะทางขนส่ง</h1>
+
+            <div class="input-section">
+                <label for="origin">จุดเริ่มต้น:</label>
+                <input type="text" id="origin" class="form-control" placeholder="ใส่จุดเริ่มต้น">
+
+                <label for="destination">จุดหมายปลายทาง:</label>
+                <input type="text" id="destination" class="form-control" placeholder="ใส่จุดหมายปลายทาง">
+
+                <button onclick="calculateDistance()" class="btn btn-primary btn-block">คำนวณเส้นทาง</button>
+            </div>
+
+            <div id="distance-result">
+            </div>
+
+            <div class="truck-panel">
+                <div class="panel-hdr panel-hdr-truck-panel">
+                    <h6>เลือกประเภทรถบรรทุก</h6>
+                </div>
+                <div class="panel-container show">
+                    <div class="panel-content pt-0 trucktype-options" id="truck-type-options">
+                        <div class="row">
+                            <div class="col-4 mt-1"><button class="btn btn-light waves-effect waves-themed btn-block m-1 p-1 truck-type-button active" data-type="all">ทั้งหมด</button></div>
+                            <div class="col-4 mt-1"><button class="btn btn-light waves-effect waves-themed btn-block m-1 p-1 truck-type-button" data-type="กระบะ">รถกระบะ</button></div>
+                            <div class="col-4 mt-1"><button class="btn btn-light waves-effect waves-themed btn-block m-1 p-1 truck-type-button" data-type="4ล้อจัมโบ้">รถ 4 ล้อจัมโบ้</button></div>
+                            <div class="col-4 mt-1"><button class="btn btn-light waves-effect waves-themed btn-block m-1 p-1 truck-type-button" data-type="6ล้อ">รถบรรทุก 6 ล้อ</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>เลือกรถบรรทุก</h2>
+            <div id="truck-options">
+            </div>
+
+            <h2>เลือกจำนวนรถ</h2>
+            <div class="truck-quantity-selection" id="truck-quantity-selection">
+                ยังไม่ได้เลือกรถบรรทุก
+            </div>
+
+            <div id="shipping-details-section" class="shipping-details-section">
+                <h2>ระบุสถานที่รับ/ส่งสินค้า</h2>
+                <div class="location-input">
+                    <label for="pickup">จุดรับ:</label>
+                    <input type="text" id="pickup" class="form-control" placeholder="กรอกที่อยู่ หรือเลือกจากแผนที่">
+                    <div id="pickup-map-container" class="location-map-container"></div>
+                </div>
+
+                <div class="location-input">
+                    <label for="dropoff">จุดส่ง:</label>
+                    <input type="text" id="dropoff" class="form-control" placeholder="กรอกที่อยู่ หรือเลือกจากแผนที่">
+                    <div id="dropoff-map-container" class="location-map-container"></div>
+                </div>
+
+                <button onclick="goToCheckout()" class="btn btn-success btn-block">ยืนยันการสั่งซื้อ</button>
+            </div>
+        </div>
+        <div id="map-container">
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 ChanCha Ritsak Yernburee. All Rights Reserved.</p>
+        <p><a href="login.html">เข้าสู่ระบบ Admin</a></p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

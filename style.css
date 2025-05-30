@@ -1,0 +1,568 @@
+/* style.css */
+body {
+    background-image: url("https://macxtransports.com/wp-content/uploads/2023/08/001-08.webp");
+    background-size: cover; /* ปรับขนาดให้เต็มพื้นที่ */
+    background-repeat: no-repeat; /* ไม่แสดงภาพซ้ำ */
+    background-position: center; /* จัดภาพไว้ตรงกลาง */
+    background-attachment: fixed; /* ทำให้ภาพพื้นหลังอยู่กับที่เมื่อเลื่อนหน้าจอ */
+    font-family: 'Kanit', sans-serif; /* ตรวจสอบให้แน่ใจว่ามีการกำหนด font-family แล้ว */
+    margin: 0;
+    background-color: #f0f2f5; /* Fallback color */
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.left-section {
+    width: 40%;
+    padding-right: 20px;
+}
+
+.right-section {
+    width: 60%;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 1.5em;
+    color: #343a40;
+    margin: 0;
+}
+
+.header .btn-info {
+    font-size: 0.9em;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+}
+
+/* --- Additional Services Panel CSS (ปรับปรุงและเพิ่ม) --- */
+.additional-services-panel {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.additional-services-panel h3 {
+    font-size: 1.1em;
+    color: #343a40;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.additional-services-panel .service-option {
+    margin-bottom: 10px;
+}
+
+.additional-services-panel .form-check-label {
+    font-size: 0.95em;
+    color: #555;
+    margin-left: 5px; /* Adjust spacing between checkbox and label */
+}
+
+.additional-services-panel .form-check-input {
+    margin-top: 0.3em;
+}
+
+/* เริ่มต้นการปรับปรุงส่วนนี้ */
+.additional-services-panel .input-group {
+    display: flex; /* ใช้ flexbox เพื่อจัดเรียง */
+    align-items: center; /* จัดให้อยู่ตรงกลางตามแนวตั้ง */
+    width: fit-content; /* ทำให้ group มีความกว้างเท่าที่จำเป็น */
+}
+
+.additional-services-panel .input-group .btn {
+    font-size: 0.85em;
+    padding: 0.25rem 0.75rem; /* เพิ่ม padding เพื่อให้ปุ่มมีขนาดเหมาะสม */
+    border-radius: 0.25rem; /* กำหนด border-radius เริ่มต้น */
+    height: 38px; /* กำหนดความสูงให้เท่ากับ input */
+    display: flex; /* ใช้ flex เพื่อจัดเนื้อหาปุ่มให้อยู่ตรงกลาง */
+    justify-content: center;
+    align-items: center;
+}
+
+.additional-services-panel .input-group .btn:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.additional-services-panel .input-group .btn:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.additional-services-panel .input-group .form-control {
+    width: 50px; /* ลดความกว้างของช่องกรอกจำนวน */
+    flex-grow: 0; /* ป้องกันไม่ให้ขยายเต็มความกว้าง */
+    text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
+    border-radius: 0; /* ลบ border-radius ที่ขอบเพื่อให้ชิดกับปุ่ม */
+    height: 38px; /* กำหนดความสูงให้เท่ากับปุ่ม */
+}
+
+#porter-price-per-person {
+    font-size: 0.9em;
+    color: #555;
+    margin-left: 10px; /* เพิ่มระยะห่างด้านซ้ายเล็กน้อย */
+    white-space: nowrap; /* ป้องกันการขึ้นบรรทัดใหม่ */
+}
+/* สิ้นสุดการปรับปรุงส่วนนี้ */
+
+
+.price-summary {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.price-summary h2 {
+    font-size: 1.2em;
+    color: #28a745;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.price-detail {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.price-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+}
+
+.btn-confirm {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    width: 100%;
+    margin-bottom: 10px; /* เพิ่ม margin ด้านล่างปุ่มยืนยัน */
+}
+
+.btn-confirm:hover {
+    background-color: #218838;
+}
+
+.btn-back {
+    background-color: #f8f9fa;
+    color: #343a40;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    margin-bottom: 15px; /* เพิ่ม margin เพื่อให้ห่างจาก booking-data-panel */
+}
+
+.btn-back:hover {
+    background-color: #e2e6ea;
+}
+
+.truck-info-panel {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.truck-info-panel h3 {
+    font-size: 1.1em;
+    color: #343a40;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.selected-truck {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.selected-truck img {
+    max-width: 100px; /* ปรับขนาดความกว้างสูงสุด */
+    height: auto;
+    margin-right: 10px;
+    border-radius: 4px; /* เพิ่มขอบมนเล็กน้อย */
+    border: 1px solid #ddd; /* เพิ่มขอบเล็กน้อย */
+}
+
+.selected-truck-details {
+    flex-grow: 1;
+}
+
+.selected-truck-details h4 {
+    font-size: 1em;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.selected-truck-details p {
+    font-size: 0.8em;
+    color: #777;
+    margin-bottom: 0;
+}
+
+.edit-button {
+    color: #007bff;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+
+/* คุณไม่ได้ใช้ .quantity-selector ใน HTML ที่ให้มา แต่ถ้าจะใช้ในอนาคตก็ควรเก็บไว้ */
+.quantity-selector {
+    display: flex;
+    align-items: center;
+}
+
+.quantity-selector button {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background-color: #eee;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9em;
+    margin: 0 5px;
+}
+
+.location-info-panel {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.location-info-panel h3 {
+    font-size: 1.1em;
+    color: #343a40;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.location-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.location-item .number {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    color: #555;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+}
+
+.location-item .address {
+    flex-grow: 1;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.edit-location {
+    color: #007bff;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.benefits-panel {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.benefits-panel h3 {
+    font-size: 1.1em;
+    color: #343a40;
+    margin-top: 0;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.benefits-panel h3 .arrow-icon {
+    font-size: 0.9em;
+    color: #777;
+    cursor: pointer;
+}
+
+.benefits-list {
+    padding-left: 20px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.benefits-list li {
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.benefits-list li .check-icon {
+    color: #28a745;
+    margin-right: 5px;
+}
+
+.user-info-panel {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.user-info-panel h3 {
+    font-size: 1.1em;
+    color: #343a40;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.user-info-panel .form-group {
+    margin-bottom: 10px;
+}
+
+.user-info-panel label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.user-info-panel input.form-control {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+}
+
+.booking-data-panel {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    color: #343a40;
+    white-space: pre-wrap; /* แสดงผลข้อความที่มีการขึ้นบรรทัดใหม่ */
+    overflow-x: auto; /* เพิ่ม scrollbar ในแนวนอนถ้าข้อความยาวเกินไป */
+}
+
+.booking-data-panel strong {
+    font-weight: bold;
+    color: #28a745;
+}
+
+/* Responsive สำหรับแท็บเล็ต (หน้าจอขนาด 768px ถึง 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .container {
+        flex-direction: column; /* เรียงเป็นแนวตั้ง */
+        padding: 30px;
+        margin: 20px auto;
+    }
+
+    .left-section {
+        width: 100%;
+        padding-right: 0;
+        margin-bottom: 30px;
+    }
+
+    .right-section {
+        width: 100%;
+        height: auto; /* ปรับความสูงอัตโนมัติ */
+    }
+
+    #map-container {
+        height: 500px;
+    }
+}
+
+/* Responsive สำหรับมือถือ (หน้าจอขนาดเล็กกว่า 768px) */
+@media (max-width: 767px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        flex-direction: column; /* เรียงเป็นแนวตั้ง */
+        padding: 20px;
+        margin: 10px auto;
+    }
+
+    .left-section {
+        width: 100%;
+        padding-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .right-section {
+        width: 100%;
+        height: auto; /* ปรับความสูงอัตโนมัติ */
+    }
+
+    #map-container {
+        height: 300px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header h1 {
+        margin-bottom: 10px;
+    }
+
+    .selected-truck img {
+        max-width: 80px; /* ปรับขนาดสำหรับมือถือให้เล็กลงเล็กน้อยเพื่อให้เข้ากับหน้าจอที่แคบลง */
+    }
+}/* CSS สำหรับ Modal เลือกประเภทรถ */
+.truck-options-container {
+    padding: 10px;
+}
+
+.truck-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    height: 100%; /* ทำให้ card มีความสูงเท่ากันใน row */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.truck-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.truck-card.selected-truck-card {
+    border-color: #28a745; /* สีเขียวสำหรับรถที่เลือกอยู่ปัจจุบัน */
+    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
+}
+
+.truck-card img {
+    max-width: 120px;
+    height: auto;
+    margin: 0 auto 15px auto;
+    display: block; /* จัดให้อยู่ตรงกลาง */
+}
+
+.truck-card .card-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #343a40;
+}
+
+.truck-card .card-text {
+    font-size: 0.9em;
+    color: #555;
+    min-height: 40px; /* กำหนด min-height เพื่อให้เนื้อหาดูสม่ำเสมอ */
+}
+
+.truck-card .btn-select-truck {
+    margin-top: 15px;
+    width: 100%; /* ทำให้ปุ่มเต็มความกว้างของ card */
+}
+
+/* เพิ่ม responsive สำหรับ Modal truck selection */
+@media (max-width: 767px) {
+    .truck-options-container .col-md-4 {
+        width: 100%; /* ในมือถือให้ card แสดงเต็มความกว้าง */
+    }
+}
+/* Footer Styles */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px; /* เพิ่มระยะห่างจากเนื้อหาด้านบน */
+            background-color: #000000; /* สีพื้นหลังอ่อนๆ */
+            color: #ffffff; /* สีกริดเทา */
+            font-size: 0.85em;
+            width: 100%;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05); /* เพิ่มเงาเล็กน้อยด้านบน */
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
+        /* ปรับปรุง body เพื่อให้ footer อยู่ด้านล่างเสมอ */
+        body {
+            display: flex;
+            flex-direction: column; /* จัดเรียงเนื้อหาในแนวตั้ง */
+            min-height: 100vh; /* ทำให้ body มีความสูงอย่างน้อยเท่ากับ viewport */
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            flex-grow: 1; /* ทำให้ container ขยายเต็มพื้นที่ที่เหลือ */
+            /* ... (โค้ด container เดิม) ... */
+        }
+                /* New CSS for Admin Login link in footer */
+        .footer a {
+            color: #ffffff; /* Same color as footer text */
+            text-decoration: none; /* Remove underline */
+            margin-left: 10px; /* Space from copyright text */
+        }
+
+        .footer a:hover {
+            text-decoration: underline; /* Add underline on hover */
+        }

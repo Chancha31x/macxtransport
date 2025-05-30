@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เช็คราคา - MACX TRANSPORTS</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* CSS สำหรับหน้าเช็คราคา (ส่วนนี้ควรจะอยู่ใน style.css แล้ว) */
+        /* ถ้ามี CSS บางส่วนซ้ำซ้อนกันใน style.css กับใน <style> นี้
+           ควรลบออกจาก <style> นี้แล้วเก็บไว้ใน style.css เท่านั้น
+           เพื่อความสะอาดของโค้ดและการจัดการที่ง่ายขึ้น */
+        body {
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .left-section {
+            width: 40%;
+            padding-right: 20px;
+        }
+
+        .right-section {
+            width: 60%;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            color: #343a40;
+            margin: 0;
+        }
+
+        .header .btn-info {
+            font-size: 0.9em;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+        }
+
+        /* --- Additional Services Panel CSS (ควรย้ายไป style.css) --- */
+        .additional-services-panel {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .additional-services-panel h3 {
+            font-size: 1.1em;
+            color: #343a40;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .additional-services-panel .service-option {
+            margin-bottom: 10px;
+        }
+
+        .additional-services-panel .form-check-label {
+            font-size: 0.95em;
+            color: #555;
+            margin-left: 5px; /* Adjust spacing between checkbox and label */
+        }
+
+        .additional-services-panel .form-check-input {
+            margin-top: 0.3em;
+        }
+
+        .additional-services-panel .input-group .form-control {
+            width: 60px; /* Make quantity input smaller */
+            flex-grow: 0; /* Prevent it from taking full width */
+        }
+
+        .additional-services-panel .input-group .btn {
+            font-size: 0.85em;
+            padding: 0.25rem 0.5rem;
+        }
+
+        #porter-price-per-person {
+            font-size: 0.9em;
+            color: #555;
+            align-self: center; /* Align with input group */
+        }
+        /* --- End Additional Services Panel CSS --- */
+
+
+        .price-summary {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .price-summary h2 {
+            font-size: 1.2em;
+            color: #28a745;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .price-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .price-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-weight: bold;
+        }
+
+        .btn-confirm {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+            margin-bottom: 10px; /* เพิ่ม margin ด้านล่างปุ่มยืนยัน */
+        }
+
+        .btn-confirm:hover {
+            background-color: #218838;
+        }
+
+        .btn-back {
+            background-color: #f8f9fa;
+            color: #343a40;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background-color: #e2e6ea;
+        }
+
+        .truck-info-panel {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .truck-info-panel h3 {
+            font-size: 1.1em;
+            color: #343a40;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .selected-truck {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .selected-truck img {
+            max-width: 80px;
+            height: auto;
+            margin-right: 10px;
+        }
+
+        .selected-truck-details {
+            flex-grow: 1;
+        }
+
+        .selected-truck-details h4 {
+            font-size: 1em;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        .selected-truck-details p {
+            font-size: 0.8em;
+            color: #777;
+            margin-bottom: 0;
+        }
+
+        .edit-button {
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .location-info-panel {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .location-info-panel h3 {
+            font-size: 1.1em;
+            color: #343a40;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .location-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .location-item .number {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            color: #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8em;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .location-item .address {
+            flex-grow: 1;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .edit-location {
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .benefits-panel {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .benefits-panel h3 {
+            font-size: 1.1em;
+            color: #343a40;
+            margin-top: 0;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .benefits-panel h3 .arrow-icon {
+            font-size: 0.9em;
+            color: #777;
+            cursor: pointer;
+        }
+
+        .benefits-list {
+            padding-left: 20px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .benefits-list li {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .benefits-list li .check-icon {
+            color: #28a745;
+            margin-right: 5px;
+        }
+
+        .user-info-panel {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .user-info-panel h3 {
+            font-size: 1.1em;
+            color: #343a40;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .user-info-panel .form-group {
+            margin-bottom: 10px;
+        }
+
+        .user-info-panel label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .user-info-panel input.form-control {
+            padding: 0.7rem;
+            font-size: 0.9rem;
+            border-radius: 0.25rem;
+            border: 1px solid #ced4da;
+        }
+
+        /* ลบ CSS ของ booking-data-panel ออก หรือตั้งค่า display: none; หากต้องการเก็บไว้ */
+        /*
+        .booking-data-panel {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #343a40;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .booking-data-panel strong {
+            font-weight: bold;
+            color: #28a745;
+        }
+        */
+
+        /* Responsive สำหรับแท็บเล็ต (หน้าจอขนาด 768px ถึง 991px) */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .container {
+                flex-direction: column; /* เรียงเป็นแนวตั้ง */
+                padding: 30px;
+                margin: 20px auto;
+            }
+
+            .left-section {
+                width: 100%;
+                padding-right: 0;
+                margin-bottom: 30px;
+            }
+
+            .right-section {
+                width: 100%;
+                height: auto; /* ปรับความสูงอัตโนมัติ */
+            }
+
+            #map-container {
+                height: 500px;
+            }
+        }
+
+        /* Responsive สำหรับมือถือ (หน้าจอขนาดเล็กกว่า 768px) */
+        @media (max-width: 767px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                flex-direction: column; /* เรียงเป็นแนวตั้ง */
+                padding: 20px;
+                margin: 10px auto;
+            }
+
+            .left-section {
+                width: 100%;
+                padding-right: 0;
+                margin-bottom: 20px;
+            }
+
+            .right-section {
+                width: 100%;
+                height: auto; /* ปรับความสูงอัตโนมัติ */
+            }
+
+            #map-container {
+                height: 300px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header h1 {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-section">
+            <div class="header">
+                <h1>เช็คราคา</h1>
+                <a href="https://line.me/R/ti/p/@390ltgch?oat_content=qr" class="btn btn-info" role="button" target="_blank">ต้องการความช่วยเหลือ?</a>
+            </div>
+
+            <div class="additional-services-panel">
+                <h3>บริการเพิ่มเติม</h3>
+                <div class="service-option form-check">
+                    <input type="checkbox" class="form-check-input" id="disassemble_small">
+                    <label class="form-check-label" for="disassemble_small">ถอดประกอบสินค้า (เล็ก) - 700 บาท</label>
+                </div>
+                <div class="service-option form-check">
+                    <input type="checkbox" class="form-check-input" id="disassemble_large">
+                    <label class="form-check-label" for="disassemble_large">ถอดประกอบสินค้า (ใหญ่) - 1,500 บาท</label>
+                </div>
+                <div class="service-option form-check">
+                    <input type="checkbox" class="form-check-input" id="product_protection">
+                    <label class="form-check-label" for="product_protection">ป้องกันสินค้า (เซ็ตละ) - 600 บาท</label>
+                </div>
+                <div class="service-option form-check">
+                    <input type="checkbox" class="form-check-input" id="bubble_wrap">
+                    <label class="form-check-label" for="bubble_wrap">บับเบิ้ลกันกระแทก - 700 บาท</label>
+                </div>
+
+                <div class="service-option mt-3">
+                    <label for="porter_quantity">บริการคนยกของ:</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <button class="btn btn-outline-secondary" type="button">-</button>
+                        </div>
+                        <input type="number" class="form-control text-center" id="porter_quantity" value="0" min="0" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button">+</button>
+                        </div>
+                        <span class="ml-2" id="porter-price-per-person">0 บาท/คน</span>
+                    </div>
+                </div>
+            </div>
+            <div class="price-summary">
+                <h2>สรุปราคา</h2>
+                <div class="price-detail">
+                    <span>ระยะทาง</span>
+                    <span id="total-distance"></span>
+                </div>
+                <div class="price-detail">
+                    <span id="selected-truck-name-summary"></span>
+                    <span id="price-per-truck-summary"></span>
+                </div>
+                <div class="price-detail">
+                    <span>ราคาระยะทาง (ตามกิโลเมตร)</span>
+                    <span id="tier-price"></span>
+                </div>
+                <div class="price-detail" id="service-charge-row" style="display: none;">
+                    <span>ค่าบริการ</span>
+                    <span id="service-charge"></span>
+                </div>
+                <div class="price-detail" id="additional-charge-row" style="display: none;">
+                    <span>ค่ากิโลเมตรเพิ่มเติม</span>
+                    <span id="additional-charge"></span>
+                </div>
+                <div class="price-detail" id="starting-price-row" style="display: none;">
+                    <span>ราคาเริ่มต้นขั้นต่ำ</span>
+                    <span id="starting-price-display"></span>
+                </div>
+                <div class="price-detail" id="additional-services-total-row" style="display: none;">
+                    <span>ค่าบริการเพิ่มเติม: <span id="additional-services-details"></span></span>
+                    <span id="additional-services-total"></span>
+                </div>
+                <div class="price-total">
+                    <span>ราคาสุทธิรวมทั้งหมด</span>
+                    <span id="final-price"></span>
+                </div>
+            </div>
+
+            <div class="user-info-panel">
+                <h3>ข้อมูลติดต่อ</h3>
+                <div class="form-group">
+                    <label for="name">ชื่อ:</label>
+                    <input type="text" class="form-control" id="name" placeholder="กรุณากรอกชื่อ">
+                </div>
+                <div class="form-group">
+                    <label for="phone">เบอร์โทรศัพท์:</label>
+                    <input type="tel" class="form-control" id="phone" placeholder="กรุณากรอกเบอร์โทรศัพท์">
+                </div>
+                <div class="form-group">
+                    <label for="line_id">ID LINE:</label>
+                    <input type="text" class="form-control" id="line_id" placeholder="กรุณากรอก ID LINE">
+                </div>
+            </div>
+
+            <button class="btn btn-confirm" onclick="submitOrder()">ยืนยันการจอง</button>
+            <a href="index.html" class="btn btn-back">ย้อนกลับไปหน้าแรก</a>
+
+            <div class="truck-info-panel">
+                <h3>1 เลือกรถและจำนวน</h3>
+                <div class="selected-truck">
+                    <img id="selected-truck-image" src="" alt="รถบรรทุก">
+                    <div class="selected-truck-details">
+                        <h4 id="selected-truck-title"></h4>
+                        <p id="selected-truck-details"></p>
+                    </div>
+                    <span class="edit-button" onclick="openTruckSelectionModal()">แก้ไข</span>
+                </div>
+            </div>
+
+            <div class="location-info-panel">
+                <h3>2 ระบุสถานที่รับ/ส่งสินค้า</h3>
+                <div class="location-item">
+                    <span class="number">1</span>
+                    <div class="address" id="pickup-address"></div>
+                    <span class="edit-location" onclick="goToPreviousPage()">แก้ไข</span>
+                </div>
+                <div class="location-item">
+                    <span class="number">2</span>
+                    <div class="address" id="dropoff-address"></div>
+                    <span class="edit-location" onclick="goToPreviousPage()">แก้ไข</span>
+                </div>
+            </div>
+
+            <div class="benefits-panel">
+                <h3>สิทธิพิเศษที่คุณจะได้รับเมื่อจองรถกับเรา</h3>
+                <ul class="benefits-list">
+                    <li><span class="check-icon">&#10003;</span> บริการส่งเอกสารกลับ (Document Return) ฟรี ไม่มีค่าใช้จ่าย</li>
+                    <li><span class="check-icon">&#10003;</span> บริการ Customer service ดูแลทั้งโทรและแชทตลอด 24 ชั่วโมง</li>
+                    <li><span class="check-icon">&#10003;</span> รถบรรทุกได้รับการดูแล ทำความสะอาด และมีผ้าใบคลุมสินค้าทุกคัน</li>
+                </ul>
+            </div>
+        </div>
+        <div class="right-section">
+            <div id="map-container" style="height: 600px;"></div>
+        </div>
+    </div>
+        <div class="modal fade" id="truckSelectionModal" tabindex="-1" aria-labelledby="truckSelectionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="truckSelectionModalLabel">เลือกประเภทรถบรรทุก</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row truck-options-container" id="truck-options-container">
+                            </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="modal fade" id="bookingSuccessModal" tabindex="-1" aria-labelledby="bookingSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookingSuccessModalLabel">การจองสำเร็จ!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="bookingSlipContent">
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                    <a id="lineOaButton" href="https://line.me/R/ti/p/@390ltgch?oat_content=qr" target="_blank" class="btn btn-success">ติดต่อผ่าน Line OA</a>
+                    <button type="button" class="btn btn-primary" onclick="printBookingSlip()">พิมพ์สลิป</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p>&copy; 2025 ChanCha Ritsak Yernburee. All Rights Reserved.</p>
+        <p><a href="login.html">เข้าสู่ระบบ Admin</a></p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="checkout_script.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVMarWpkIR4dcATATFRd-ThcIe7h0QLXk&libraries=places,maps&callback=initCheckoutMap"></script>
+</body>
+</html>
