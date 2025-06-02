@@ -584,19 +584,20 @@ function submitOrder() {
             'ระยะทาง (กม.)': distanceKm,
             'ประเภทรถบรรทุก': orderDetails.truck.name,
             'จำนวนรถบรรทุก': orderDetails.quantity,
-            'ราคาระยะทาง (ตามกิโลเมตร)': formatCurrency(priceDetails.tierCost) + ' บาท',
-            'ค่าบริการ': formatCurrency(priceDetails.serviceCost) + ' บาท',
-            'ค่ากิโลเมตรเพิ่มเติม': formatCurrency(priceDetails.additionalCost) + ' บาท',
             // แสดงราคาเริ่มต้นขั้นต่ำในข้อมูลที่ส่ง หากมีการใช้
             ...(priceDetails.calculatedBasePrice < priceDetails.startingPrice && priceDetails.startingPrice > 0 ?
                 { 'ราคาเริ่มต้นขั้นต่ำที่ใช้': formatCurrency(priceDetails.startingPrice) + ' บาท' } : {}),
-            'ราคาสุทธิรวมทั้งหมด': formatCurrency(finalPriceTotal) + ' บาท'
+            'ราคาระยะทาง (ตามกิโลเมตร)': formatCurrency(priceDetails.tierCost) + ' บาท',
+            'ค่าบริการ': formatCurrency(priceDetails.serviceCost) + ' บาท',
+            'ค่ากิโลเมตรเพิ่มเติม': formatCurrency(priceDetails.additionalCost) + ' บาท',
         };
 
         if (totalAdditionalServicesCost > 0) {
             bookingData['บริการเพิ่มเติม (รายละเอียด)'] = additionalServiceNamesList.join(', ');
             bookingData['รวมค่าบริการเพิ่มเติม'] = formatCurrency(totalAdditionalServicesCost) + ' บาท';
         }
+
+        bookingData['ราคาสุทธิรวมทั้งหมด'] = formatCurrency(finalPriceTotal) + ' บาท';
 
         fetch('https://formspree.io/f/xrbqdagb', {
             method: 'POST',
