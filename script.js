@@ -62,14 +62,14 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
             startingPrice = 2500;
             pricePerKmRanges = [
                 { max: 100, rate: 24, serviceCharge: 700 },
-                { max: 200, rate: 23 },
-                { max: 300, rate: 22 },
-                { max: 400, rate: 20 },
-                { max: 500, rate: 18 },
-                { max: 600, rate: 17 },
-                { max: 700, rate: 15 },
-                { max: 800, rate: 14 },
-                { max: 900, rate: 13 },
+                { max: 200, rate: 23, serviceCharge: 500 },
+                { max: 300, rate: 22, serviceCharge: 500 },
+                { max: 400, rate: 20, serviceCharge: 500 },
+                { max: 500, rate: 18, serviceCharge: 500 },
+                { max: 600, rate: 17, serviceCharge: 500 },
+                { max: 700, rate: 15, serviceCharge: 500 },
+                { max: 800, rate: 14, serviceCharge: 500 },
+                { max: 900, rate: 13, serviceCharge: 500 },
                 // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 13 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
                 { max: Infinity, rate: 13, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
             ];
@@ -77,15 +77,15 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
         case "รถบรรทุก 6 ล้อ":
             startingPrice = 3500;
             pricePerKmRanges = [
-                { max: 100, rate: 24, serviceCharge: 700 },
-                { max: 200, rate: 25 },
-                { max: 300, rate: 23 },
-                { max: 400, rate: 22 },
-                { max: 500, rate: 20 },
-                { max: 600, rate: 19 },
-                { max: 700, rate: 17 },
-                { max: 800, rate: 17 },
-                { max: 900, rate: 17 },
+                { max: 100, rate: 25, serviceCharge: 700 },
+                { max: 200, rate: 24, serviceCharge: 600 },
+                { max: 300, rate: 23, serviceCharge: 600 },
+                { max: 400, rate: 22, serviceCharge: 600 },
+                { max: 500, rate: 20, serviceCharge: 600 },
+                { max: 600, rate: 19, serviceCharge: 600 },,
+                { max: 700, rate: 17, serviceCharge: 600 },
+                { max: 800, rate: 17, serviceCharge: 600 },
+                { max: 900, rate: 17, serviceCharge: 600 },
                 // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 17 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
                 { max: Infinity, rate: 17, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
             ];
