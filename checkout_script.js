@@ -481,9 +481,19 @@ function updateSummaryPrices() {
 
     const serviceChargeRow = document.getElementById('service-charge-row');
     const serviceChargeSpan = document.getElementById('service-charge');
+    const serviceChargeLabelSpan = serviceChargeRow.querySelector('span:first-child'); // เลือก span ที่เป็น label
+
     if (priceDetails.serviceCost > 0) {
         serviceChargeSpan.innerText = `${formatCurrency(priceDetails.serviceCost)} บาท`;
         serviceChargeRow.style.display = 'flex';
+        // อัปเดต Label ของค่าบริการตามเงื่อนไข
+        if (priceDetails.serviceCost === 500) {
+            serviceChargeLabelSpan.innerText = 'ราคาบรรทุกสินค้า สำหรับน้ำหนักไม่เกิน 3 ตัน';
+        } else if (priceDetails.serviceCost === 600) {
+            serviceChargeLabelSpan.innerText = 'ราคาบรรทุกสินค้า สำหรับน้ำหนักไม่เกิน 4 ตัน';
+        } else {
+            serviceChargeLabelSpan.innerText = 'ค่าบริการ'; // ค่าเริ่มต้น
+        }
     } else {
         serviceChargeRow.style.display = 'none';
     }
@@ -638,22 +648,23 @@ function displayBookingSlip(bookingData) {
     let htmlContent = `
         <style>
             .slip-container {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                font-size: 14px;
+                font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* ใช้ Kanit ถ้ามี */
+                font-size: 12px; /* ลดขนาด font หลัก */
                 line-height: 1.6;
                 color: #333;
-                padding: 15px;
+                padding: 10px; /* ลด padding */
                 border: 1px solid #eee;
                 border-radius: 8px;
                 background-color: #fff;
             }
             .slip-header {
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 15px; /* ลด margin */
             }
             .slip-header h4 {
-                color: #007bff;
+                color:rgb(255, 0, 0);
                 margin-bottom: 5px;
+                font-size: 1.1em; /* ลดขนาด h4 เล็กน้อย */
             }
             .slip-item {
                 display: flex;
@@ -673,19 +684,19 @@ function displayBookingSlip(bookingData) {
                 text-align: right;
             }
             .slip-total {
-                font-size: 16px;
+                font-size: 14px; /* ลดขนาด font ราคารวม */
                 font-weight: bold;
                 margin-top: 15px;
                 border-top: 2px solid #333;
                 padding-top: 10px;
                 display: flex;
                 justify-content: space-between;
-                color: #007bff; /* สีน้ำเงินเพื่อให้เด่นขึ้น */
+                color:rgb(255, 0, 0); /* สีน้ำเงินเพื่อให้เด่นขึ้น */
             }
             .slip-note {
-                font-size: 12px;
+                font-size: 10px; /* ลดขนาด font หมายเหตุ */
                 color: #666;
-                margin-top: 20px;
+                margin-top: 15px; /* ลด margin */
                 text-align: center;
             }
             @media print {
@@ -715,7 +726,7 @@ function displayBookingSlip(bookingData) {
         </style>
         <div class="slip-container">
             <div class="slip-header">
-                <h4>สลิปการจองการขนส่ง</h4>
+                <h4>MACX TRANSPORTS Co.,Ltd.</h4>
                 <p>วันที่: ${new Date().toLocaleDateString('th-TH')}</p>
                 <p>เวลา: ${new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'})}</p>
             </div>
@@ -724,12 +735,24 @@ function displayBookingSlip(bookingData) {
     // วนลูปเพื่อแสดงข้อมูลอื่นๆ ยกเว้นราคาสุทธิ
     for (const key in bookingData) {
         if (bookingData.hasOwnProperty(key)) {
+            let displayKey = key;
+            let displayValue = bookingData[key];
+
+            // ตรวจสอบและเปลี่ยนชื่อ Key สำหรับ "ค่าบริการ"
+            if (key === 'ค่าบริการ') {
+                if (bookingData[key] === '500 บาท') {
+                    displayKey = 'ราคาบรรทุกสินค้า สำหรับน้ำหนักไม่เกิน 3 ตัน';
+                } else if (bookingData[key] === '600 บาท') {
+                    displayKey = 'ราคาบรรทุกสินค้า สำหรับน้ำหนักไม่เกิน 4 ตัน';
+                }
+            }
+
             // ไม่แสดงข้อมูลพิกัดในสลิป
-            if (!key.includes('พิกัด') && key !== 'ราคาสุทธิรวมทั้งหมด') { // ตรวจสอบอีกครั้งเพื่อความแน่ใจ
+            if (!displayKey.includes('พิกัด') && displayKey !== 'ราคาสุทธิรวมทั้งหมด') {
                 htmlContent += `
                     <div class="slip-item">
-                        <strong>${key}:</strong>
-                        <span>${bookingData[key]}</span>
+                        <strong>${displayKey}:</strong>
+                        <span>${displayValue}</span>
                     </div>
                 `;
             }
@@ -762,7 +785,27 @@ function displayBookingSlip(bookingData) {
 }
 
 function printBookingSlip() {
-    window.print();
+    const slipElement = document.querySelector('#bookingSlipContent .slip-container'); // เลือก .slip-container เพื่อการ capture ที่แม่นยำขึ้น
+
+    if (slipElement && typeof html2canvas === 'function') {
+        html2canvas(slipElement, {
+            useCORS: true, // ในกรณีที่มีรูปภาพจากภายนอก (แม้ว่าในสลิปปัจจุบันจะไม่มี)
+            scale: 2 // เพิ่ม scale เพื่อให้ภาพคมชัดขึ้น (ปรับค่าได้ตามต้องการ)
+        }).then(canvas => {
+            const imageData = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = imageData;
+            link.download = 'booking_slip.png'; // ชื่อไฟล์ที่จะดาวน์โหลด
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }).catch(error => {
+            console.error('Error generating image with html2canvas:', error);
+            alert('เกิดข้อผิดพลาดในการสร้างรูปภาพสลิป');
+        });
+    } else {
+        alert('ไม่สามารถสร้างรูปภาพสลิปได้ กรุณาตรวจสอบว่า html2canvas โหลดเรียบร้อยแล้ว');
+    }
 }
 
 // ฟังก์ชันนี้จะถูกใช้เมื่อผู้ใช้ต้องการย้อนกลับไปหน้าแรกเท่านั้น
