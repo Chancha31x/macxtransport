@@ -42,7 +42,7 @@ function formatCurrency(amount) {
 
 // ฟังก์ชันสำหรับคำนวณราคาค่าขนส่งตามประเภทรถและระยะทาง (ปรับปรุงเป็น Single-Tier Based on Highest Tier Reached)
 function calculateTruckPriceDetails(truckType, distanceKm) {
-    let startingPrice = 0;
+    let startingPrice = 0; // ค่านี้จะไม่ถูกนำมาใช้ในการคำนวณราคารวมขั้นสุดท้ายอีกต่อไป
     let pricePerKmRanges = [];
 
     // กำหนดเรทราคาตามประเภทรถ
@@ -50,49 +50,49 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
         case "รถกระบะตู้ทึบ":
             startingPrice = 1500;
             pricePerKmRanges = [
-                { max: 100, rate: 24, serviceCharge: 700 },
-                { max: 200, rate: 22 },
-                { max: 300, rate: 20 },
-                { max: 400, rate: 18 },
-                { max: 500, rate: 16 },
-                { max: 600, rate: 15 },
-                { max: 700, rate: 13 },
-                { max: 800, rate: 12 },
-                { max: 900, rate: 11 },
+                { max: 100, rate: 23, serviceCharge: 700 }, // ลด 1 บาท
+                { max: 200, rate: 21 }, // ลด 1 บาท
+                { max: 300, rate: 19 }, // ลด 1 บาท
+                { max: 400, rate: 17 }, // ลด 1 บาท
+                { max: 500, rate: 15 }, // ลด 1 บาท
+                { max: 600, rate: 14 }, // ลด 1 บาท
+                { max: 700, rate: 12 }, // ลด 1 บาท
+                { max: 800, rate: 11 }, // ลด 1 บาท
+                { max: 900, rate: 10 }, // ลด 1 บาท
                 // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 11 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
-                { max: Infinity, rate: 11, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true }
+                { max: Infinity, rate: 10, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true } // ลด 1 บาท
             ];
             break;
         case "รถ 4 ล้อจัมโบ้":
             startingPrice = 2500;
             pricePerKmRanges = [
-                { max: 100, rate: 24, serviceCharge: 700 },
-                { max: 200, rate: 23, serviceCharge: 500 }, // เพิ่ม serviceCharge: 500
-                { max: 300, rate: 22, serviceCharge: 500 }, // เพิ่ม serviceCharge: 500
-                { max: 400, rate: 20, serviceCharge: 500 }, // เพิ่ม serviceCharge: 500
-                { max: 500, rate: 18, serviceCharge: 500 }, // เพิ่ม serviceCharge: 500
-                { max: 600, rate: 17, serviceCharge: 500 }, // เพิ่ม serviceCharge: 500
-                { max: 700, rate: 15, serviceCharge: 500 }, // เพิ่ม serviceCharge: 500
-                { max: 800, rate: 14, serviceCharge: 500 }, // เพิ่ม serviceCharge: 500
-                { max: 900, rate: 13, serviceCharge: 500 }, // เพิ่ม serviceCharge: 500
+                { max: 100, rate: 23, serviceCharge: 700 }, // ลด 1 บาท
+                { max: 200, rate: 22, serviceCharge: 500 }, // ลด 1 บาท
+                { max: 300, rate: 21, serviceCharge: 500 }, // ลด 1 บาท
+                { max: 400, rate: 19, serviceCharge: 500 }, // ลด 1 บาท
+                { max: 500, rate: 17, serviceCharge: 500 }, // ลด 1 บาท
+                { max: 600, rate: 16, serviceCharge: 500 }, // ลด 1 บาท
+                { max: 700, rate: 14, serviceCharge: 500 }, // ลด 1 บาท
+                { max: 800, rate: 13, serviceCharge: 500 }, // ลด 1 บาท
+                { max: 900, rate: 12, serviceCharge: 500 }, // ลด 1 บาท
                 // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 13 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
-                { max: Infinity, rate: 13, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true, serviceCharge: 500 } // เพิ่ม serviceCharge: 500
+                { max: Infinity, rate: 12, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true, serviceCharge: 500 } // ลด 1 บาท
             ];
             break;
         case "รถบรรทุก 6 ล้อ":
             startingPrice = 3500;
             pricePerKmRanges = [
-                { max: 100, rate: 25, serviceCharge: 700 },
-                { max: 200, rate: 24, serviceCharge: 600 }, // เพิ่ม serviceCharge: 600
-                { max: 300, rate: 23, serviceCharge: 600 }, // เพิ่ม serviceCharge: 600
-                { max: 400, rate: 22, serviceCharge: 600 }, // เพิ่ม serviceCharge: 600
-                { max: 500, rate: 20, serviceCharge: 600 }, // เพิ่ม serviceCharge: 600
-                { max: 600, rate: 19, serviceCharge: 600 }, // เพิ่ม serviceCharge: 600
-                { max: 700, rate: 17, serviceCharge: 600 }, // เพิ่ม serviceCharge: 600
-                { max: 800, rate: 17, serviceCharge: 600 }, // เพิ่ม serviceCharge: 600
-                { max: 900, rate: 17, serviceCharge: 600 }, // เพิ่ม serviceCharge: 600
+                { max: 100, rate: 24, serviceCharge: 700 }, // ลด 1 บาท
+                { max: 200, rate: 23, serviceCharge: 600 }, // ลด 1 บาท
+                { max: 300, rate: 22, serviceCharge: 600 }, // ลด 1 บาท
+                { max: 400, rate: 21, serviceCharge: 600 }, // ลด 1 บาท
+                { max: 500, rate: 19, serviceCharge: 600 }, // ลด 1 บาท
+                { max: 600, rate: 18, serviceCharge: 600 }, // ลด 1 บาท
+                { max: 700, rate: 16, serviceCharge: 600 }, // ลด 1 บาท
+                { max: 800, rate: 16, serviceCharge: 600 }, // ลด 1 บาท
+                { max: 900, rate: 16, serviceCharge: 600 }, // ลด 1 บาท
                 // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 17 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
-                { max: Infinity, rate: 17, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true, serviceCharge: 600 } // เพิ่ม serviceCharge: 600
+                { max: Infinity, rate: 16, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true, serviceCharge: 600 } // ลด 1 บาท
             ];
             break;
         default:
@@ -100,7 +100,8 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
     }
 
     if (distanceKm <= 0) {
-        return { total: startingPrice, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: startingPrice, calculatedBasePrice: startingPrice };
+        // ถ้าไม่เกิน 0 กม. ราคาจะเท่ากับ startingPrice แต่เราจะคืนค่า calculatedBasePrice เป็น 0 เพื่อให้ราคาสุทธิรวมทั้งหมดไม่ใช้ startingPrice
+        return { total: startingPrice, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: startingPrice, calculatedBasePrice: 0 };
     }
 
     let tierRate = 0;
@@ -137,6 +138,7 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
         if (foundRange.serviceCharge !== undefined) {
              serviceCost = foundRange.serviceCharge;
         }
+
     } else {
         // คำนวณราคาตามเรทของ Tier ที่พบ คูณด้วยระยะทางทั้งหมด
         tierCost = distanceKm * tierRate;
@@ -152,9 +154,9 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
     return {
         total: calculatedBasePrice, // ผลรวมค่า tier, service, additional
         tierCost: tierCost, // ค่าตาม rate tier
-        serviceCost: serviceCost, // ค่าบริการ 700 บาท
+        serviceCost: serviceCost, // ค่าบริการ
         additionalCost: additionalCost, // ค่ากิโลเมตรเพิ่มเติม (สำหรับ >900km)
-        startingPrice: startingPrice, // ราคาเริ่มต้นขั้นต่ำของรถประเภทนั้นๆ
+        startingPrice: startingPrice, // ราคาเริ่มต้นขั้นต่ำของรถประเภทนั้นๆ (ไม่ได้ใช้ในการคำนวณราคารวมอีกต่อไป)
         calculatedBasePrice: calculatedBasePrice // ราคารวมที่คำนวณได้จาก กม. (ก่อนเทียบกับ startingPrice)
     };
 }
@@ -454,27 +456,32 @@ function updateSummaryPrices() {
     const priceDetails = calculateTruckPriceDetails(orderDetails.truck.name, distanceKm);
 
     let pricePerTruckBase = priceDetails.calculatedBasePrice; // ราคารถตาม กม. ที่คำนวณได้
-    let startingPriceMinimum = priceDetails.startingPrice; // ราคาเริ่มต้นขั้นต่ำ
+    // let startingPriceMinimum = priceDetails.startingPrice; // ไม่นำมาใช้ในการคำนวณราคารวมขั้นสุดท้ายอีกต่อไป
 
-    let priceToDisplayForTruck = pricePerTruckBase; // ค่าที่จะแสดงสำหรับราคารถเดี่ยว
-    let finalTruckPriceForCalculation = pricePerTruckBase; // ค่าที่ใช้ในการคำนวณราคารวม
+    // ลบ Logic ที่ใช้ startingPriceMinimum ในการคำนวณราคาที่จะแสดง
+    // let priceToDisplayForTruck = pricePerTruckBase;
+    // let finalTruckPriceForCalculation = pricePerTruckBase;
 
-    // ตรวจสอบเงื่อนไขราคาเริ่มต้นขั้นต่ำ
-    if (pricePerTruckBase < startingPriceMinimum && startingPriceMinimum > 0) {
-        priceToDisplayForTruck = startingPriceMinimum; // ถ้าคำนวณได้น้อยกว่าขั้นต่ำ ให้แสดงขั้นต่ำ
-        finalTruckPriceForCalculation = startingPriceMinimum; // และใช้ขั้นต่ำในการคำนวณ
-        document.getElementById('starting-price-display').innerText = `${formatCurrency(startingPriceMinimum)} บาท`;
-        document.getElementById('starting-price-row').style.display = 'flex';
-    } else {
-        document.getElementById('starting-price-row').style.display = 'none';
-    }
+    // // ตรวจสอบเงื่อนไขราคาเริ่มต้นขั้นต่ำ (ส่วนนี้จะไม่ถูกใช้ในการแสดงผลราคาสุทธิรวมทั้งหมดอีกต่อไป)
+    // if (pricePerTruckBase < startingPriceMinimum && startingPriceMinimum > 0) {
+    //     priceToDisplayForTruck = startingPriceMinimum; // ถ้าคำนวณได้น้อยกว่าขั้นต่ำ ให้แสดงขั้นต่ำ
+    //     finalTruckPriceForCalculation = startingPriceMinimum; // และใช้ขั้นต่ำในการคำนวณ
+    //     document.getElementById('starting-price-display').innerText = `${formatCurrency(startingPriceMinimum)} บาท`;
+    //     document.getElementById('starting-price-row').style.display = 'flex';
+    // } else {
+    //     document.getElementById('starting-price-row').style.display = 'none';
+    // }
+
+    // ซ่อนแถว "ราคาเริ่มต้นขั้นต่ำ" เสมอ เนื่องจากไม่ได้นำมาใช้ในการคำนวณราคาสุทธิอีกต่อไป
+    document.getElementById('starting-price-row').style.display = 'none';
+
 
     const additionalServicesResult = calculateAdditionalServicesTotalAndNames();
     let totalAdditionalServicesCost = additionalServicesResult.total;
     let additionalServiceNames = additionalServicesResult.names;
 
-    // คำนวณราคารวมทั้งหมด
-    let finalPriceTotal = (finalTruckPriceForCalculation * orderDetails.quantity) + totalAdditionalServicesCost;
+    // คำนวณราคารวมทั้งหมด (ใช้ pricePerTruckBase โดยตรง ซึ่งคือ tierCost + serviceCost + additionalCost)
+    let finalPriceTotal = (pricePerTruckBase * orderDetails.quantity) + totalAdditionalServicesCost;
 
     // แสดงผลรายละเอียดราคา
     document.getElementById('tier-price').innerText = `${formatCurrency(priceDetails.tierCost)} บาท`;
@@ -562,13 +569,13 @@ function submitOrder() {
     const priceDetails = calculateTruckPriceDetails(orderDetails.truck.name, distanceKm);
 
     let basePricePerTruckCalculated = priceDetails.calculatedBasePrice;
-    let startingPriceMinimum = priceDetails.startingPrice;
+    // let startingPriceMinimum = priceDetails.startingPrice; // ไม่นำมาใช้ในการคำนวณราคารวมขั้นสุดท้ายอีกต่อไป
 
-    // กำหนดราคารถที่จะใช้ในการคำนวณสุดท้าย
+    // กำหนดราคารถที่จะใช้ในการคำนวณสุดท้าย (ใช้ basePricePerTruckCalculated โดยตรง)
     let finalTruckPriceForSubmission = basePricePerTruckCalculated;
-    if (basePricePerTruckCalculated < startingPriceMinimum && startingPriceMinimum > 0) {
-        finalTruckPriceForSubmission = startingPriceMinimum;
-    }
+    // if (basePricePerTruckCalculated < startingPriceMinimum && startingPriceMinimum > 0) {
+    //     finalTruckPriceForSubmission = startingPriceMinimum;
+    // }
 
     const additionalServicesResult = calculateAdditionalServicesTotalAndNames();
     let totalAdditionalServicesCost = additionalServicesResult.total;
@@ -600,9 +607,9 @@ function submitOrder() {
             'ราคาระยะทาง (ตามกิโลเมตร)': formatCurrency(priceDetails.tierCost) + ' บาท',
             'ค่าบริการ': formatCurrency(priceDetails.serviceCost) + ' บาท',
             'ค่ากิโลเมตรเพิ่มเติม': formatCurrency(priceDetails.additionalCost) + ' บาท',
-            // แสดงราคาเริ่มต้นขั้นต่ำในข้อมูลที่ส่ง หากมีการใช้
-            ...(priceDetails.calculatedBasePrice < priceDetails.startingPrice && priceDetails.startingPrice > 0 ?
-                { 'ราคาเริ่มต้นขั้นต่ำที่ใช้': formatCurrency(priceDetails.startingPrice) + ' บาท' } : {}),
+            // แสดงราคาเริ่มต้นขั้นต่ำในข้อมูลที่ส่ง หากมีการใช้ (ถูกปิดการใช้งานแล้ว)
+            // ...(priceDetails.calculatedBasePrice < priceDetails.startingPrice && priceDetails.startingPrice > 0 ?
+            //     { 'ราคาเริ่มต้นขั้นต่ำที่ใช้': formatCurrency(priceDetails.startingPrice) + ' บาท' } : {}),
             'ราคาสุทธิรวมทั้งหมด': formatCurrency(finalPriceTotal) + ' บาท'
         };
 
