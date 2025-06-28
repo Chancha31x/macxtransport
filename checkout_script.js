@@ -42,7 +42,7 @@ function formatCurrency(amount) {
 
 // ฟังก์ชันสำหรับคำนวณราคาค่าขนส่งตามประเภทรถและระยะทาง (ปรับปรุงเป็น Single-Tier Based on Highest Tier Reached)
 function calculateTruckPriceDetails(truckType, distanceKm) {
-    let startingPrice = 0; // ค่านี้จะไม่ถูกนำมาใช้ในการคำนวณราคารวมขั้นสุดท้ายอีกต่อไป
+    let startingPrice = 0; // ค่านี้จะถูกกำหนดตามประเภทรถ และใช้เป็นราคาขั้นต่ำ
     let pricePerKmRanges = [];
 
     // กำหนดเรทราคาตามประเภทรถ
@@ -80,7 +80,8 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
             ];
             break;
         case "รถบรรทุก 6 ล้อ":
-            startingPrice = 3500;
+            // *** แก้ไขตรงนี้: ตั้งราคาเริ่มต้นสำหรับรถบรรทุก 6 ล้อเป็น 2500
+            startingPrice = 2500;
             pricePerKmRanges = [
                 { max: 100, rate: 24, serviceCharge: 700 }, // ลด 1 บาท
                 { max: 200, rate: 23, serviceCharge: 600 }, // ลด 1 บาท
@@ -99,9 +100,9 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
             return { total: 0, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: 0, calculatedBasePrice: 0 };
     }
 
+    // *** แก้ไขตรงนี้: หากระยะทางเป็น 0 หรือน้อยกว่า ให้คืนค่า startingPrice โดยตรง
     if (distanceKm <= 0) {
-        // ถ้าไม่เกิน 0 กม. ราคาจะเท่ากับ startingPrice แต่เราจะคืนค่า calculatedBasePrice เป็น 0 เพื่อให้ราคาสุทธิรวมทั้งหมดไม่ใช้ startingPrice
-        return { total: startingPrice, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: startingPrice, calculatedBasePrice: 0 };
+        return { total: startingPrice, tierCost: 0, serviceCost: 0, additionalCost: 0, startingPrice: startingPrice, calculatedBasePrice: startingPrice };
     }
 
     let tierRate = 0;
@@ -151,16 +152,19 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
 
     let calculatedBasePrice = tierCost + serviceCost + additionalCost;
 
+    // ตรวจสอบให้แน่ใจว่าราคารวมที่คำนวณได้ไม่ต่ำกว่า startingPrice
+    let finalCalculatedPrice = Math.max(calculatedBasePrice, startingPrice);
+
+
     return {
-        total: calculatedBasePrice, // ผลรวมค่า tier, service, additional
-        tierCost: tierCost, // ค่าตาม rate tier
-        serviceCost: serviceCost, // ค่าบริการ
-        additionalCost: additionalCost, // ค่ากิโลเมตรเพิ่มเติม (สำหรับ >900km)
-        startingPrice: startingPrice, // ราคาเริ่มต้นขั้นต่ำของรถประเภทนั้นๆ (ไม่ได้ใช้ในการคำนวณราคารวมอีกต่อไป)
-        calculatedBasePrice: calculatedBasePrice // ราคารวมที่คำนวณได้จาก กม. (ก่อนเทียบกับ startingPrice)
+        total: finalCalculatedPrice, // ผลรวมค่า tier, service, additional หลังจากเทียบกับ startingPrice
+        tierCost: tierCost, // ค่าตาม rate tier (ก่อนเทียบ startingPrice)
+        serviceCost: serviceCost, // ค่าบริการ (ก่อนเทียบ startingPrice)
+        additionalCost: additionalCost, // ค่ากิโลเมตรเพิ่มเติม (สำหรับ >900km) (ก่อนเทียบ startingPrice)
+        startingPrice: startingPrice, // ราคาเริ่มต้นขั้นต่ำของรถประเภทนั้นๆ
+        calculatedBasePrice: finalCalculatedPrice // ราคารวมที่คำนวณได้จาก กม. (หลังเทียบกับ startingPrice)
     };
 }
-
 
 function initCheckoutMap() {
     map = new google.maps.Map(document.getElementById('map-container'), {
