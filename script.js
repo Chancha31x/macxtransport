@@ -76,15 +76,15 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
         case "รถบรรทุก 6 ล้อ":
             startingPrice = 3500;
             pricePerKmRanges = [
-                { max: 100, rate: 24, serviceCharge: 2500 }, // ลด 1 บาท
-                { max: 200, rate: 23, serviceCharge: 2500 }, // ลด 1 บาท
-                { max: 300, rate: 22, serviceCharge: 2500 }, // ลด 1 บาท
-                { max: 400, rate: 21, serviceCharge: 2500 }, // ลด 1 บาท
-                { max: 500, rate: 19, serviceCharge: 2500 }, // ลด 1 บาท
-                { max: 600, rate: 18, serviceCharge: 2500 }, // ลด 1 บาท
-                { max: 700, rate: 16, serviceCharge: 2500 }, // ลด 1 บาท
-                { max: 800, rate: 16, serviceCharge: 2500 }, // ลด 1 บาท
-                { max: 900, rate: 16, serviceCharge: 2500 }, // ลด 1 บาท
+                { max: 100, rate: 24, serviceCharge: 3000 }, // ลด 1 บาท
+                { max: 200, rate: 23, serviceCharge: 3000 }, // ลด 1 บาท
+                { max: 300, rate: 22, serviceCharge: 3000 }, // ลด 1 บาท
+                { max: 400, rate: 21, serviceCharge: 3000 }, // ลด 1 บาท
+                { max: 500, rate: 19, serviceCharge: 3000 }, // ลด 1 บาท
+                { max: 600, rate: 18, serviceCharge: 3000 }, // ลด 1 บาท
+                { max: 700, rate: 16, serviceCharge: 3000 }, // ลด 1 บาท
+                { max: 800, rate: 16, serviceCharge: 3000 }, // ลด 1 บาท
+                { max: 900, rate: 16, serviceCharge: 3000 }, // ลด 1 บาท
                 // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 17 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
                 { max: Infinity, rate: 16, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true, serviceCharge: 600 } // ลด 1 บาท
             ];
