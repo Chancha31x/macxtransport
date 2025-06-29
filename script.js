@@ -86,7 +86,7 @@ function calculateTruckPriceDetails(truckType, distanceKm) {
                 { max: 800, rate: 16, serviceCharge: 3000 }, // ลด 1 บาท
                 { max: 900, rate: 16, serviceCharge: 3000 }, // ลด 1 บาท
                 // สำหรับระยะทาง 900 กม. ขึ้นไป ให้ใช้ rate 17 และ additionalPerKmCharge 1 จากระยะทางทั้งหมด
-                { max: Infinity, rate: 16, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true, serviceCharge: 600 } // ลด 1 บาท
+                { max: Infinity, rate: 16, additionalPerKmCharge: 1, applyToTotalKm: true, overrideServiceCharge: true, serviceCharge: 3000 } // ลด 1 บาท
             ];
             break;
         default:
